@@ -1,0 +1,50 @@
+
+
+.showbiz-container				{	max-width:1210px; min-width:100%; overflow:hidden;
+									padding:0px 20px;margin:0px auto;
+									box-sizing:border-box;
+									-moz-box-sizing:border-box;
+									-webkit-box-sizing:border-box;
+								}
+
+.showbiz-container.darkbg		{	padding:20px;
+									background:#d5d5d5;
+									max-width:1170px;
+								}
+
+.showbiz-container.whitebg		{	padding:20px; padding-top:0px;
+									background:#fff;
+									max-width:1170px;
+									-webkit-box-shadow: 0px 0px 5px 1px rgba(100,100,100,0.1);
+									-moz-box-shadow: 0px 0px 5px 1px rgba(100,100,100,0.1);
+									box-shadow: 0px 0px 5px 1px rgba(100,100,100,0.1);
+									overflow:visible
+								}
+
+
+.showbiz-container.retrodarkbg	{	padding:20px;padding-top:0px;
+									background:#222;
+									border:1px solid #1e1e1e;
+									max-width:1170px;
+									overflow:visible
+								}
+
+.showbiz-container.fullwidth			{	max-width:100%;}
+.showbiz-container.fullwidth.nopaddings	{	padding:0px;}
+.sameheight								{	height:400px;}
+
+
+
+.titulo-slide{
+text-align:center;
+width:100%;
+font-size:17px;
+padding-bottom:10px;
+padding-top:10px;
+color:#fff;
+margin:0px auto;
+background: url('../../img/menuli.png') repeat scroll left top 
+}
+
+
+

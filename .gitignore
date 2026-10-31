@@ -1,0 +1,31 @@
+# ------------------------------------------------------------
+# VERDEMANZANA - archivos que NO se guardan en Git
+# ------------------------------------------------------------
+
+# Librerías de Composer: se reconstruyen con "composer install" (composer.lock sí se guarda)
+/vendor/
+
+# Archivos generados por Yii (se regeneran solos)
+/runtime/
+/assets/
+
+# Imágenes y archivos subidos por usuarios (pesan mucho; se respaldan aparte)
+/imagen/
+
+# Contraseña de la base de datos (cada entorno tiene la suya)
+/config/db.php
+
+# Respaldos, logs y basura del sistema
+*.bak
+*.log
+error_log
+*.zip
+*.sql
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Configuración de editores
+/.idea/
+/.vscode/
+*.swp

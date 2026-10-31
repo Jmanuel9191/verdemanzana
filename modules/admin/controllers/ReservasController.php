@@ -1,0 +1,1382 @@
+<?php
+
+namespace app\modules\admin\controllers;
+use app\helpers\CamposReservaHelper;
+use app\models\CronogramaBoda;
+use app\models\DetalleCronograma;
+use app\models\FormCamposExtra;
+use app\models\FormLayoutOrden;
+use app\models\Invitados;
+use app\models\InvitadosSearch;
+use app\models\Noticias;
+use app\models\NoticiasGaleria;
+use app\models\NoticiasSearch;
+use app\models\Reservas;
+use app\models\ReservasGaleriacoordinacion;
+use app\models\ReservasGaleriacronograma;
+use app\models\ReservasGaleriadecoracion;
+use app\models\ReservasGaleriadecoracionus;
+use app\models\ReservasGaleriaequipamiento;
+use app\models\ReservasGaleriapresupuesto;
+use app\models\ReservasSearch;
+use Yii;
+use yii\filters\AccessControl;
+use yii\helpers\Json;
+use yii\web\Controller;
+use yii\web\NotFoundHttpException;
+use yii\web\UploadedFile;
+
+/**
+ * NoticiasController implements the CRUD actions for Noticias model.
+ */
+class ReservasController extends Controller
+{
+    /**
+     * @inheritdoc
+     */
+
+    public function behaviors()
+    {
+        return [
+            /*'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],*/
+            'access' => [
+                'class' => AccessControl::className(),
+                //'only'  => ['*'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Lists all Noticias models.
+     * @return mixed
+     */
+
+    
+    public function actionIndex()
+    {
+        $searchModel = new ReservasSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $dataProvider->setSort([
+            'defaultOrder' => ['idreservas' => SORT_DESC]]);
+
+        return $this->render('index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+
+    public function actionInvitados($idreservas)
+    {
+        $searchModel = new InvitadosSearch();
+        $searchModel->idreservas = $idreservas; // preasignar la reserva
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        $dataProvider->setSort([
+            'defaultOrder' => ['apellido' => SORT_ASC, 'nombre' => SORT_ASC],
+        ]);
+
+        return $this->render('viewinvitados', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'idreservas' => $idreservas, // útil para crear nuevo invitado
+        ]);
+    }
+
+    private function validarFechaLimite($idreservas)
+    {
+        $reserva = \app\models\Reservas::findOne($idreservas);
+
+        if (!$reserva || !$reserva->fecha_reserva) {
+            throw new \yii\web\NotFoundHttpException('No se encontró la reserva o no tiene fecha definida.');
+        }
+
+        $fechaLimite = date('Y-m-d', strtotime($reserva->fecha_reserva . ' -1 day'));
+
+        if (date('Y-m-d') > $fechaLimite) {
+            throw new \yii\web\ForbiddenHttpException('Ya no es posible modificar la lista de invitados.');
+        }
+    }
+
+    public function actionCreateinvitado($idreservas)
+    {
+        $this->validarFechaLimite($idreservas);
+
+        $model = new Invitados();
+        $model->idreservas = $idreservas;
+
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            return $this->redirect(['invitados', 'idreservas' => $idreservas]);
+        }
+
+        return $this->render('createinvitado', ['model' => $model]);
+    }
+
+    public function actionUpdateinv($id)
+    {
+        $model = \app\models\Invitados::findOne($id);
+        if (!$model) {
+            throw new \yii\web\NotFoundHttpException('El invitado no fue encontrado.');
+        }
+
+        $this->validarFechaLimite($model->idreservas);
+
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            return $this->redirect(['invitados', 'idreservas' => $model->idreservas]);
+        }
+
+        return $this->render('updateinv', ['model' => $model]);
+    }
+
+    public function actionDeleteinvitado($id)
+    {
+        $model = \app\models\Invitados::findOne($id);
+        if (!$model) {
+            throw new \yii\web\NotFoundHttpException('El invitado no fue encontrado.');
+        }
+
+        $this->validarFechaLimite($model->idreservas);
+
+        $model->delete();
+
+        return $this->redirect(['invitados', 'idreservas' => $model->idreservas]);
+    }
+
+
+    /*
+
+        public function init()
+        {
+            if (!empty(Yii::$app->user->identity)) {
+                if (Yii::$app->user->identity->tipo_admin != 1) {
+                    return $this->redirect(['/site/index']);
+                }
+            }
+            parent::init(); // TODO: Change the autogenerated stub
+        }
+    */
+
+    /**
+     * Displays a single Noticias model.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionView($id)
+    {
+        return $this->render('view', [
+            'model' => $this->findModel($id),
+        ]);
+    }
+    public function actionViewguia($id)
+    {
+        return $this->render('viewguia', [
+            'model' => $this->findModel($id),
+        ]);
+    }
+
+
+    public function actionViewcronograma($id)
+    {
+        return $this->render('viewcronograma', [
+            'model' => $this->findModel($id),
+        ]);
+    }
+    /**
+     * Creates a new Noticias model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @return mixed
+     */
+    public function actionCreate()
+    {
+        $model = new Reservas();
+
+        if ($model->load(Yii::$app->request->post())) {
+            $model->contrasena = md5($model->contrasena);
+            $model->fecha_registro = date('Y-m-d H:i:s');
+
+            // Obtener instancias de los archivos
+            $model->file = UploadedFile::getInstance($model, 'file');
+            $model->file2 = UploadedFile::getInstance($model, 'file2');
+            $model->file3 = UploadedFile::getInstance($model, 'file3');
+
+            $name = Yii::$app->security->generateRandomString();
+
+            if ($model->validate()) {
+                if ($model->uploadfiles($name)) {
+                    // Asignar nombres únicos a los archivos
+                    $model->cronogramafile = $name . '_cronograma.' . $model->file->extension;
+                    $model->listainvitadosfile = $name . '_listainvitados.' . $model->file2->extension;
+                    $model->presupuestofile = $name . '_presupuesto.' . $model->file3->extension;
+                } else {
+                    Yii::$app->session->setFlash('error', 'Error al subir los archivos.');
+                    return $this->refresh();
+                }
+
+                // Guardar el modelo en la base de datos
+                if ($model->save(false)) {
+                    Yii::$app->session->setFlash('success', 'Reserva creada con éxito.');
+                    return $this->redirect(['view', 'id' => $model->idreservas]);
+                } else {
+                    // Eliminar archivos si el guardado falla
+                    $this->deleteFiles($model);
+                    Yii::$app->session->setFlash('error', 'Error al guardar la reserva.');
+                }
+            } else {
+                Yii::$app->session->setFlash('error', 'Error en la validación del formulario.');
+            }
+        }
+
+        return $this->render('create', [
+            'model' => $model,
+        ]);
+    }
+
+
+    public function actionDeleteFile($id, $fileType)
+    {
+        $model = $this->findModel($id);
+
+        if ($fileType === 'cronograma' && $model->cronogramafile) {
+            $filePath = Yii::$app->basePath . "/imagen/usuarios/" . $model->cronogramafile;
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+            $model->cronogramafile = null;
+            $model->save(false);
+            return json_encode(['success' => true]);
+        }
+
+        if ($fileType === 'listainvitados' && $model->listainvitadosfile) {
+            $filePath = Yii::$app->basePath . "/imagen/usuarios/" . $model->listainvitadosfile;
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+            $model->listainvitadosfile = null;
+            $model->save(false);
+            return json_encode(['success' => true]);
+        }
+
+
+        if ($fileType === 'presupuests' && $model->presupuestofile) {
+            $filePath = Yii::$app->basePath . "/imagen/usuarios/" . $model->presupuestofile;
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+            $model->presupuestofile = null;
+            $model->save(false);
+            return json_encode(['success' => true]);
+        }
+
+        return json_encode(['success' => false]);
+    }
+
+    /**
+     * Updates an existing Noticias model.
+     * If update is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id
+     * @return mixed
+     */
+
+
+    public function actionUpdate($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->load(Yii::$app->request->post())) {
+            $model->file = UploadedFile::getInstance($model, 'file');
+            $model->file2 = UploadedFile::getInstance($model, 'file2');
+            $model->file3 = UploadedFile::getInstance($model, 'file3');
+
+            $name = Yii::$app->security->generateRandomString(); // Nombre único base para los archivos
+
+            if ($model->validate()) {
+                if ($model->uploadfiles($name)) {
+                    if (!empty($model->file)) {
+                        $oldCronogramaPath = Yii::$app->basePath . "/imagen/usuarios/" . $model->cronogramafile;
+
+                        if (!empty($model->cronogramafile) && file_exists($oldCronogramaPath) && is_file($oldCronogramaPath)) {
+                            unlink($oldCronogramaPath);  //  Eliminar solo si es un archivo válido
+                        }
+
+                        $model->cronogramafile = $name . '_cronograma.' . $model->file->extension;
+                    }
+
+                    if (!empty($model->file2)) {
+                        $oldInvitadosPath2 = Yii::$app->basePath . "/imagen/usuarios/" . $model->listainvitadosfile;
+
+
+                        if (!empty($model->listainvitadosfile) && file_exists($oldInvitadosPath2) && is_file($oldInvitadosPath2)) {
+                            unlink($oldInvitadosPath2);  //  Eliminar solo si es un archivo válido
+                        }
+
+
+                        $model->listainvitadosfile = $name . '_listainvitados.' . $model->file2->extension;
+                    }
+
+                    if (!empty($model->file3)) {
+                        $oldInvitadosPath3 = Yii::$app->basePath . "/imagen/usuarios/" . $model->presupuestofile;
+
+                        if (!empty($model->presupuestofile) && file_exists($oldInvitadosPath3) && is_file($oldInvitadosPath3)) {
+                            unlink($oldInvitadosPath3);  //  Eliminar solo si es un archivo válido
+                        }
+
+                        $model->presupuestofile = $name . '_presupuesto.' . $model->file3->extension;
+                    }
+                }
+
+                if ($model->save(false)) {
+                    Yii::$app->session->setFlash('success', 'Actualización exitosa.');
+                    return $this->redirect(['index']);
+                } else {
+                    Yii::$app->session->setFlash('error', 'Error al guardar los cambios.');
+                }
+            }
+        }
+
+        return $this->render('update', [
+            'model' => $model,
+        ]);
+    }
+
+
+
+    public function actionUpdateguia($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->load(Yii::$app->request->post())) {
+
+            if ($model->validate()) {
+
+                if ($model->save(false)) {
+                    Yii::$app->session->setFlash('success', 'Actualización exitosa.');
+                    return $this->redirect(['viewguia', 'id' => $model->idreservas]);
+                } else {
+                    Yii::$app->session->setFlash('error', 'Error al guardar los cambios.');
+                }
+            }
+        }
+
+        return $this->render('updateguia', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionUpdate2($id)
+    {
+        $model = $this->findModel($id);
+        $hashActual = $model->contrasena;
+
+        if ($model->load(Yii::$app->request->post())) {
+            $nueva = trim((string)$model->contrasena);
+            // Vacío o sin cambios: se mantiene la contraseña actual. Si hay texto nuevo, se guarda.
+            $model->contrasena = ($nueva === '' || $nueva === $hashActual) ? $hashActual : md5($nueva);
+
+            if ($model->save()) {
+                return $this->redirect(['view', 'id' => $model->idreservas]);
+            }
+        }
+
+        // No mostrar el hash en el formulario
+        $model->contrasena = '';
+        return $this->render('update2', [
+            'model' => $model,
+        ]);
+    }
+
+
+    /**
+     * Deletes an existing Noticias model.
+     * If deletion is successful, the browser will be redirected to the 'index' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionDelete($id)
+    {
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
+    }
+
+    /**
+     * Finds the Noticias model based on its primary key value.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Noticias the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    protected function findModel($id)
+    {
+        if (($model = Reservas::findOne($id)) !== null) {
+            return $model;
+        } else {
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }
+    }
+
+    public function actionGaleriacronograma($id)
+    {
+        $model = new ReservasGaleriacronograma();
+        $model->idreservas = $id;
+        $galeriacronograma = $model->findAll(['idreservas' => $id]);
+        return $this->render('galeriacronograma', ['id' => $id, 'model' => $model, 'galeriacronograma' => $galeriacronograma]);
+    }
+
+    public function actionGaleriapresupuesto($id)
+    {
+        $model = new ReservasGaleriapresupuesto();
+        $model->idreservas = $id;
+        $galeriapresupuesto = $model->findAll(['idreservas' => $id]);
+        return $this->render('galeriapresupuesto', ['id' => $id, 'model' => $model, 'galeriapresupuesto' => $galeriapresupuesto]);
+    }
+
+    public function actionGaleriaequipamiento($id)
+    {
+        $model = new ReservasGaleriaequipamiento();
+        $model->idreservas = $id;
+        $galeriaequipamiento = $model->findAll(['idreservas' => $id]);
+        return $this->render('galeriaequipamiento', ['id' => $id, 'model' => $model, 'galeriaequipamiento' => $galeriaequipamiento]);
+    }
+
+    public function actionGaleriadecoracion($id)
+    {
+        $model = new ReservasGaleriadecoracion();
+        $model->idreservas = $id;
+        $galeriadecoracion = $model->findAll(['idreservas' => $id]);
+        return $this->render('galeriadecoracion', ['id' => $id, 'model' => $model, 'galeriadecoracion' => $galeriadecoracion]);
+    }
+
+    public function actionGaleriadecoracionus($id)
+    {
+        $model = new ReservasGaleriadecoracionus();
+        $model->idreservas = $id;
+        $galeriadecoracionus = $model->findAll(['idreservas' => $id]);
+        return $this->render('galeriadecoracionus', ['id' => $id, 'model' => $model, 'galeriadecoracionus' => $galeriadecoracionus]);
+    }
+
+
+    public function actionGaleriacoordinacion($id)
+    {
+        $model = new ReservasGaleriacoordinacion();
+        $model->idreservas = $id;
+        $galeriacoordinacion = $model->findAll(['idreservas' => $id]);
+        return $this->render('galeriacoordinacion', ['id' => $id, 'model' => $model, 'galeriacoordinacion' => $galeriacoordinacion]);
+    }
+
+    public function actionUploadcronograma()
+    {
+        $model = new ReservasGaleriacronograma();
+
+        $model->file = UploadedFile::getInstance($model, 'file');
+        $name = Yii::$app->security->generateRandomString();
+        if ($model->upload($name)) {
+            //$ext = explode('.',$model->archivo->name);
+            //$ext = end($ext);
+            // generate a unique file name to prevent duplicate filenames
+            //$model->archivo = Yii::$app->security->generateRandomString() . ".{$ext}";
+            // the path to save file, you can set an uploadPath
+            // in Yii::$app->params (as used in example below)
+            //Yii::$app->params['uploadPath'] = Yii::$app->basePath . '/imagen/noticias/';
+            //$path = Yii::$app->params['uploadPath'] . $model->archivo;
+            $model->archivo = $name . '.' . $model->file->extension;
+            $model->fecha_registro = date('Y-m-d H:i:s');
+            $model->idreservas = Yii::$app->request->post('id');
+            if ($model->save(false)) {
+                echo Json::encode([]);
+                return $this->redirect(['galeriacronograma', 'id' => Yii::$app->request->post('id')]);
+            }
+        }
+        var_dump($model->getErrors());
+        die();
+        return false;
+    }
+
+
+
+    public function actionUploaddecoracion()
+    {
+        $model = new ReservasGaleriadecoracion();
+
+        $model->file = UploadedFile::getInstance($model, 'file');
+        $name = Yii::$app->security->generateRandomString();
+        if ($model->upload($name)) {
+            //$ext = explode('.',$model->archivo->name);
+            //$ext = end($ext);
+            // generate a unique file name to prevent duplicate filenames
+            //$model->archivo = Yii::$app->security->generateRandomString() . ".{$ext}";
+            // the path to save file, you can set an uploadPath
+            // in Yii::$app->params (as used in example below)
+            //Yii::$app->params['uploadPath'] = Yii::$app->basePath . '/imagen/noticias/';
+            //$path = Yii::$app->params['uploadPath'] . $model->archivo;
+            $model->archivo = $name . '.' . $model->file->extension;
+            $model->fecha_registro = date('Y-m-d H:i:s');
+            $model->idreservas = Yii::$app->request->post('id');
+            if ($model->save(false)) {
+                echo Json::encode([]);
+                return $this->redirect(['galeriadecoracion', 'id' => Yii::$app->request->post('id')]);
+            }
+        }
+        var_dump($model->getErrors());
+        die();
+        return false;
+    }
+
+
+    public function actionUploaddecoracionus()
+    {
+        $model = new ReservasGaleriadecoracionus();
+
+        $model->file = UploadedFile::getInstance($model, 'file');
+        $name = Yii::$app->security->generateRandomString();
+        if ($model->upload($name)) {
+            //$ext = explode('.',$model->archivo->name);
+            //$ext = end($ext);
+            // generate a unique file name to prevent duplicate filenames
+            //$model->archivo = Yii::$app->security->generateRandomString() . ".{$ext}";
+            // the path to save file, you can set an uploadPath
+            // in Yii::$app->params (as used in example below)
+            //Yii::$app->params['uploadPath'] = Yii::$app->basePath . '/imagen/noticias/';
+            //$path = Yii::$app->params['uploadPath'] . $model->archivo;
+            $model->archivo = $name . '_galdecoracionus.' . $model->file->extension;
+            $model->fecha_registro = date('Y-m-d H:i:s');
+            $model->idreservas = Yii::$app->request->post('id');
+            if ($model->save(false)) {
+                echo Json::encode([]);
+                return $this->redirect(['galeriadecoracionus', 'id' => Yii::$app->request->post('id')]);
+            }
+        }
+        var_dump($model->getErrors());
+        die();
+        return false;
+    }
+
+
+
+    public function actionUploadpresupuesto()
+    {
+        $model = new ReservasGaleriapresupuesto();
+
+        $model->file = UploadedFile::getInstance($model, 'file');
+        $name = Yii::$app->security->generateRandomString();
+        if ($model->upload($name)) {
+            //$ext = explode('.',$model->archivo->name);
+            //$ext = end($ext);
+            // generate a unique file name to prevent duplicate filenames
+            //$model->archivo = Yii::$app->security->generateRandomString() . ".{$ext}";
+            // the path to save file, you can set an uploadPath
+            // in Yii::$app->params (as used in example below)
+            //Yii::$app->params['uploadPath'] = Yii::$app->basePath . '/imagen/noticias/';
+            //$path = Yii::$app->params['uploadPath'] . $model->archivo;
+            $model->archivo = $name . '_galpresupuesto.' . $model->file->extension;
+            $model->fecha_registro = date('Y-m-d H:i:s');
+            $model->idreservas = Yii::$app->request->post('id');
+            if ($model->save(false)) {
+                echo Json::encode([]);
+                return $this->redirect(['galeriapresupuesto', 'id' => Yii::$app->request->post('id')]);
+            }
+        }
+        var_dump($model->getErrors());
+        die();
+        return false;
+    }
+
+
+    public function actionUploadcoordinacion()
+    {
+        $model = new ReservasGaleriacoordinacion();
+
+        $model->file = UploadedFile::getInstance($model, 'file');
+        $name = Yii::$app->security->generateRandomString();
+        if ($model->upload($name)) {
+            //$ext = explode('.',$model->archivo->name);
+            //$ext = end($ext);
+            // generate a unique file name to prevent duplicate filenames
+            //$model->archivo = Yii::$app->security->generateRandomString() . ".{$ext}";
+            // the path to save file, you can set an uploadPath
+            // in Yii::$app->params (as used in example below)
+            //Yii::$app->params['uploadPath'] = Yii::$app->basePath . '/imagen/noticias/';
+            //$path = Yii::$app->params['uploadPath'] . $model->archivo;
+            $model->archivo = $name . '_galcoordinacion.' . $model->file->extension;
+            $model->fecha_registro = date('Y-m-d H:i:s');
+            $model->idreservas = Yii::$app->request->post('id');
+            if ($model->save(false)) {
+                echo Json::encode([]);
+                return $this->redirect(['galeriacoordinacion', 'id' => Yii::$app->request->post('id')]);
+            }
+        }
+        var_dump($model->getErrors());
+        die();
+        return false;
+    }
+
+
+
+
+    public function actionUploadequipamiento()
+    {
+        $model = new ReservasGaleriaequipamiento();
+
+        $model->file = UploadedFile::getInstance($model, 'file');
+        $name = Yii::$app->security->generateRandomString();
+        if ($model->upload($name)) {
+            //$ext = explode('.',$model->archivo->name);
+            //$ext = end($ext);
+            // generate a unique file name to prevent duplicate filenames
+            //$model->archivo = Yii::$app->security->generateRandomString() . ".{$ext}";
+            // the path to save file, you can set an uploadPath
+            // in Yii::$app->params (as used in example below)
+            //Yii::$app->params['uploadPath'] = Yii::$app->basePath . '/imagen/noticias/';
+            //$path = Yii::$app->params['uploadPath'] . $model->archivo;
+            $model->archivo = $name . '_galequipamiento.' . $model->file->extension;
+            $model->fecha_registro = date('Y-m-d H:i:s');
+            $model->idreservas = Yii::$app->request->post('id');
+            if ($model->save(false)) {
+                echo Json::encode([]);
+                return $this->redirect(['galeriaequipamiento', 'id' => Yii::$app->request->post('id')]);
+            }
+        }
+        var_dump($model->getErrors());
+        die();
+        return false;
+    }
+
+
+
+
+    public function actionErasecronograma()
+    {
+        $model = new ReservasGaleriacronograma();
+        $id = Yii::$app->request->post('key');
+        $model = $model->findOne(['idgaleria' => $id]);
+        if (empty($model->attributes)) {
+            return false;
+        }
+        $idp = $model->idreservas;
+        $url = "/imagen/reservascronograma/" . $model->archivo;
+        $url = Yii::$app->basePath . $url;
+        //$url=str_replace($model->archivo,'@web','@webroot');
+        if ($model->delete()) {
+            unlink($url);
+            return $this->redirect(['galeriacronograma', 'id' => $idp]);
+        }
+        return false;
+    }
+
+
+
+    public function actionErasedecoracion()
+    {
+        $model = new ReservasGaleriadecoracion();
+        $id = Yii::$app->request->post('key');
+        $model = $model->findOne(['idgaleria' => $id]);
+        if (empty($model->attributes)) {
+            return false;
+        }
+        $idp = $model->idreservas;
+        $url = "/imagen/reservasdecoracion/" . $model->archivo;
+        $url = Yii::$app->basePath . $url;
+        //$url=str_replace($model->archivo,'@web','@webroot');
+        if ($model->delete()) {
+            unlink($url);
+            return $this->redirect(['galeriadecoracion', 'id' => $idp]);
+        }
+        return false;
+    }
+
+    public function actionErasedecoracionus()
+    {
+        $model = new ReservasGaleriadecoracionus();
+        $id = Yii::$app->request->post('key');
+        $model = $model->findOne(['idgaleria' => $id]);
+        if (empty($model->attributes)) {
+            return false;
+        }
+        $idp = $model->idreservas;
+        $url = "/imagen/reservasdecoracionus/" . $model->archivo;
+        $url = Yii::$app->basePath . $url;
+        //$url=str_replace($model->archivo,'@web','@webroot');
+        if ($model->delete()) {
+            unlink($url);
+            return $this->redirect(['galeriadecoracionus', 'id' => $idp]);
+        }
+        return false;
+    }
+    public function actionErasepresupuesto()
+    {
+        $model = new ReservasGaleriapresupuesto();
+        $id = Yii::$app->request->post('key');
+        $model = $model->findOne(['idgaleria' => $id]);
+        if (empty($model->attributes)) {
+            return false;
+        }
+        $idp = $model->idreservas;
+        $url = "/imagen/galeriapresupuesto/" . $model->archivo;
+        $url = Yii::$app->basePath . $url;
+        //$url=str_replace($model->archivo,'@web','@webroot');
+        if ($model->delete()) {
+            unlink($url);
+            return $this->redirect(['galeriapresupuesto', 'id' => $idp]);
+        }
+        return false;
+    }
+    public function actionErasecoordinacion()
+    {
+        $model = new ReservasGaleriacoordinacion();
+        $id = Yii::$app->request->post('key');
+        $model = $model->findOne(['idgaleria' => $id]);
+        if (empty($model->attributes)) {
+            return false;
+        }
+        $idp = $model->idreservas;
+        $url = "/imagen/galeriacoordinacion/" . $model->archivo;
+        $url = Yii::$app->basePath . $url;
+        //$url=str_replace($model->archivo,'@web','@webroot');
+        if ($model->delete()) {
+            unlink($url);
+            return $this->redirect(['galeriacoordinacion', 'id' => $idp]);
+        }
+        return false;
+    }
+
+
+    public function actionEraseequipamiento()
+    {
+        $model = new ReservasGaleriaequipamiento();
+        $id = Yii::$app->request->post('key');
+        $model = $model->findOne(['idgaleria' => $id]);
+        if (empty($model->attributes)) {
+            return false;
+        }
+        $idp = $model->idreservas;
+        $url = "/imagen/galeriaequipamiento/" . $model->archivo;
+        $url = Yii::$app->basePath . $url;
+        //$url=str_replace($model->archivo,'@web','@webroot');
+        if ($model->delete()) {
+            unlink($url);
+            return $this->redirect(['galeriaequipamiento', 'id' => $idp]);
+        }
+        return false;
+    }
+
+
+
+/*
+    public function actionUp($id)
+    {
+        if (!Yii::$app->request->isAjax)
+            $this->redirect(['index']);
+        $model = Noticias::findOne(['idnoticia' => $id]);
+        $model2 = Noticias::findOne(['idnoticia' => $id - 1]);
+        if($model2) {
+            $model->idnoticia = 0;
+            $model->save();
+            $model->idnoticia = $model2->idnoticia;
+            $model2->idnoticia = $id;
+            $model2->save();
+            $model->save();
+        }
+        elseif(($id - 1)!=0){
+            $model->idnoticia = $id - 1;
+            $model->save();
+        }
+    }*/
+/*
+    public function actionDown($id)
+    {
+        if (!Yii::$app->request->isAjax)
+            $this->redirect(['index']);
+        $model = Noticias::findOne(['idnoticia' => $id]);
+        $model2 = Noticias::findOne(['idnoticia' => $id + 1]);
+        if ($model2) {
+            $model->idnoticia = 0;
+            $model->save();
+            $model->idnoticia = $model2->idnoticia;
+            $model2->idnoticia = $id;
+            $model2->save();
+            $model->save();
+        }
+    }*/
+
+    public function actionEstado($id)
+    {
+        if (!Yii::$app->request->isAjax)
+            $this->redirect(['index']);
+        $model = new Reservas();
+        $model = $model->findOne(['idreservas' => $id]);
+        $model->estado = (string)!$model->estado;
+        $model->save();
+    }
+
+   /* public function actionDestacado($id)
+    {
+        if (!Yii::$app->request->isAjax)
+            $this->redirect(['index']);
+        $model = new Noticias();
+        $model = $model->findOne(['idnoticia' => $id]);
+        $model->destacado = (string)!$model->destacado;
+        $model->save();
+    }*/
+
+
+
+
+    /*CAMPOS EXTRAS*/
+
+    public function actionFormCamposExtra($idreserva)
+    {
+        $reserva = Reservas::findOne($idreserva);
+        if (!$reserva) {
+            throw new NotFoundHttpException("Reserva no encontrada");
+        }
+
+        // Traer todos los momentos posibles (fijos) del evento
+        $todosMomentos = \app\models\MomentosCronograma::find()
+            ->where(['evento_tipo' => 'boda']) // SOLO MOMENTOS DE BODAS
+            ->orderBy(['seccion' => SORT_ASC, 'orden' => SORT_ASC])
+            ->all();
+
+
+        // Traer los datos actuales por reserva
+        $detalle = \app\models\DetalleCronograma::find()
+            ->where(['idcronograma' => $reserva->idreservas])
+            ->indexBy('idmomento')
+            ->all();
+
+        // Traer los momentos dinámicos personalizados
+        $extras = \app\models\DetalleCronogramaExtra::find()
+            ->where(['idreserva' => $idreserva])
+            ->all();
+
+        // Traer el orden guardado
+        $ordenes = \app\models\FormLayoutOrden::find()
+            ->where(['idreserva' => $idreserva])
+            ->indexBy(function ($item) {
+                return $item->tipo === 'extra' ? 'extra_' . $item->campo : $item->campo;
+            })
+            ->all();
+
+        return $this->render('form-campos-extra', [
+            'reserva' => $reserva,
+            'momentos' => $todosMomentos,
+            'detalle' => $detalle,
+            'extras' => $extras,
+            'ordenes' => $ordenes,
+        ]);
+    }
+
+
+
+
+    public function actionCrearCampoExtra()
+    {
+        $post = Yii::$app->request->post();
+
+        // Validación básica
+        if (empty($post['idreserva']) || empty($post['grupo']) || empty($post['etiqueta'])) {
+            Yii::$app->session->setFlash('error', 'Faltan datos obligatorios.');
+            return $this->redirect(['form-campos-extra', 'idreserva' => $post['idreserva']]);
+        }
+
+        $campo = new \app\models\DetalleCronogramaExtra();
+        $campo->idreserva = $post['idreserva'];
+        $campo->grupo = $post['grupo'];
+        $campo->etiqueta = $post['etiqueta'];
+        $campo->hora_inicio = isset($post['hora_inicio']) ? $post['hora_inicio'] : null;
+        $campo->hora_fin = isset($post['hora_fin']) ? $post['hora_fin'] : null;
+        $campo->proveedor = isset($post['proveedor']) ? $post['proveedor'] : null;
+        $campo->telefono = isset($post['telefono']) ? $post['telefono'] : null;
+        $campo->descripcion = isset($post['descripcion']) ? $post['descripcion'] : null;
+        $campo->orden = isset($post['orden']) ? intval($post['orden']) : null;
+        $campo->fecha_creacion = date('Y-m-d H:i:s');
+
+        if ($campo->save()) {
+            $orden = new \app\models\FormLayoutOrden();
+            $orden->idreserva = $campo->idreserva;
+            $orden->tipo_evento = 'boda';
+            $orden->grupo = $campo->grupo;
+            $orden->campo = (string)$campo->idcampo_extra; // debe coincidir con DetalleCronogramaExtra
+            $orden->tipo = 'extra';
+            $orden->etiqueta = $campo->etiqueta;
+            $orden->orden = $campo->orden !== null ? $campo->orden : (int)\app\models\FormLayoutOrden::find()
+                    ->where(['idreserva' => $campo->idreserva, 'grupo' => $campo->grupo])
+                    ->max('orden') + 1;
+            $orden->activo = 1;
+
+            if (!$orden->save()) {
+                Yii::$app->session->setFlash('error', 'Error al guardar orden.');
+                Yii::error($orden->getErrors(), 'orden-errores');
+            } else {
+                Yii::$app->session->setFlash('success', 'Campo agregado correctamente.');
+            }
+        } else {
+            Yii::$app->session->setFlash('error', 'Error al guardar campo.');
+            Yii::error($campo->getErrors(), 'campo-errores');
+        }
+
+        return $this->redirect(['form-campos-extra', 'idreserva' => $post['idreserva']]);
+    }
+
+
+
+    public function actionGuardarOrdenCampos()
+    {
+        $post = Yii::$app->request->post();
+        $idreserva = isset($post['idreserva']) ? $post['idreserva'] : null;
+
+        if (!$idreserva) {
+            throw new \yii\web\BadRequestHttpException("Reserva no especificada.");
+        }
+
+        $grupos = isset($post['grupo']) ? $post['grupo'] : [];
+        $tipos = isset($post['tipo']) ? $post['tipo'] : [];
+        $ordenes = isset($post['orden']) ? $post['orden'] : [];
+        $tiposEvento = isset($post['tipo_evento']) ? $post['tipo_evento'] : [];
+
+        // Cargar etiquetas de campos fijos desde el helper
+        $camposPorGrupo = \app\components\CamposReservaHelper::getCamposPorGrupo();
+        $etiquetasPorCampo = [];
+        foreach ($camposPorGrupo as $grupoCampos) {
+            foreach ($grupoCampos as $item) {
+                if (isset($item['campo']) && isset($item['label'])) {
+                    $etiquetasPorCampo[$item['campo']] = $item['label'];
+                }
+            }
+        }
+
+        foreach ($grupos as $campo => $grupo) {
+            $tipo = isset($tipos[$campo]) ? $tipos[$campo] : 'fijo';
+            $orden = isset($ordenes[$campo]) ? intval($ordenes[$campo]) : 0;
+            $tipoEvento = isset($tiposEvento[$campo]) ? $tiposEvento[$campo] : 'boda';
+
+            // Determinar valor real del campo
+            $campoOrigen = $campo;
+            if ($tipo === 'extra' && strpos($campo, 'extra_') === 0) {
+                $campoOrigen = substr($campo, 6);
+            }
+
+            // Obtener la etiqueta visible
+            if ($tipo === 'fijo' && isset($etiquetasPorCampo[$campoOrigen])) {
+                $etiqueta = $etiquetasPorCampo[$campoOrigen];
+            } elseif ($tipo === 'extra') {
+                $extra = \app\models\DetalleCronogramaExtra::findOne(['idcampo_extra' => $campoOrigen]);
+                $etiqueta = $extra ? $extra->etiqueta : 'Campo Extra ' . $campoOrigen;
+            } else {
+                $etiqueta = ucwords(str_replace('_', ' ', $campoOrigen));
+            }
+
+            // Buscar si ya existe (por reserva y tipo_evento)
+            $registro = \app\models\FormLayoutOrden::find()
+                ->where([
+                    'campo' => (string) $campoOrigen,
+                    'tipo' => $tipo,
+                    'idreserva' => $idreserva,
+                    'tipo_evento' => $tipoEvento,
+                ])
+                ->one();
+
+            if ($registro) {
+                $registro->grupo = $grupo;
+                $registro->orden = $orden;
+                $registro->campo = (string) $campoOrigen;
+
+                $registro->activo = 1;
+                $registro->tipo_evento = $tipoEvento;
+                $registro->etiqueta = $etiqueta;
+                if (!$registro->save()) {
+                    var_dump($registro->errors);
+                    die;
+                }
+            } else {
+                $nuevo = new \app\models\FormLayoutOrden([
+                    'idreserva' => $idreserva,
+                    'tipo_evento' => $tipoEvento,
+                    'grupo' => $grupo,
+                    'tipo' => $tipo,
+                    'campo' => (string) $campoOrigen, // <- conversión importante
+                    'etiqueta' => $etiqueta,
+                    'orden' => $orden,
+                    'activo' => 1,
+                ]);
+
+                if (!$nuevo->save()) {
+                    var_dump($nuevo->errors);
+                    die;
+                }
+            }
+        }
+
+        Yii::$app->session->setFlash('success', 'Orden actualizado correctamente.');
+        return $this->redirect(['form-campos-extra', 'idreserva' => $idreserva]);
+    }
+
+
+
+
+
+    public function actionEliminarCampoExtra($id, $idreserva)
+    {
+        $campo = \app\models\DetalleCronogramaExtra::findOne($id);
+
+        if ($campo) {
+            // Eliminar su orden relacionado en FormLayoutOrden
+            \app\models\FormLayoutOrden::deleteAll([
+                'campo' => (string)$id, // cast a string para asegurar coincidencia
+                'tipo' => 'extra',
+                'idreserva' => $idreserva
+            ]);
+
+            $campo->delete();
+
+            Yii::$app->session->setFlash('success', 'Campo dinámico eliminado correctamente.');
+        } else {
+            Yii::$app->session->setFlash('error', 'No se encontró el campo dinámico.');
+        }
+
+        return $this->redirect(['form-campos-extra', 'idreserva' => $idreserva]);
+    }
+
+
+    public function actionCreatecronograma($id)
+    {
+        $model = Reservas::findOne($id);
+        $post = Yii::$app->request->post();
+
+        if ($post) {
+            $cronograma = CronogramaBoda::findOne(['idreserva' => $id]);
+            if (!$cronograma) {
+                $cronograma = new CronogramaBoda();
+                $cronograma->idreserva = $id;
+                $cronograma->save();
+            }
+
+            foreach ($post['idmomento'] as $i => $idmomento) {
+                // ⚠️ Verificar si ya existe ese detalle para no duplicar
+                $existe = DetalleCronograma::find()
+                    ->where(['idcronograma' => $cronograma->idcronograma, 'idmomento' => $idmomento])
+                    ->exists();
+
+                if ($existe) {
+                    continue; // ya existe, no lo dupliques
+                }
+
+                $detalle = new DetalleCronograma();
+                $detalle->idcronograma = $cronograma->idcronograma;
+                $detalle->idmomento = $idmomento;
+                $detalle->hora_inicio = $post['hora_inicio'][$i];
+                $detalle->hora_fin = $post['hora_fin'][$i];
+                $detalle->proveedor = $post['proveedor'][$i];
+                $detalle->telefono = $post['telefono'][$i];
+                $detalle->descripcion = $post['descripcion'][$i];
+                $detalle->save();
+            }
+
+            Yii::$app->session->setFlash('success', 'Cronograma guardado correctamente.');
+            return $this->redirect(['viewcronograma', 'id' => $id]);
+        }
+
+        return $this->render('createcronograma', [
+            'model' => $model,
+        ]);
+    }
+
+
+    public function actionUpdatecronograma($id)
+    {
+        $model = Reservas::findOne($id);
+        if (!$model) {
+            throw new NotFoundHttpException('La reserva no existe.');
+        }
+
+        $post = Yii::$app->request->post();
+        $cronograma = CronogramaBoda::findOne(['idreserva' => $id]);
+        if (!$cronograma) {
+            throw new NotFoundHttpException('El cronograma no existe para esta reserva.');
+        }
+
+        if ($post) {
+            foreach ($post['idmomento'] as $i => $idmomento) {
+                $detalle = DetalleCronograma::findOne([
+                    'idcronograma' => $cronograma->idcronograma,
+                    'idmomento' => $idmomento
+                ]);
+
+                if (!$detalle) {
+                    $detalle = new DetalleCronograma();
+                    $detalle->idcronograma = $cronograma->idcronograma;
+                    $detalle->idmomento = $idmomento;
+                }
+
+                $detalle->hora_inicio = $post['hora_inicio'][$i];
+                $detalle->hora_fin = $post['hora_fin'][$i];
+                $detalle->proveedor = $post['proveedor'][$i];
+                $detalle->telefono = $post['telefono'][$i];
+                $detalle->descripcion = $post['descripcion'][$i];
+                $detalle->save();
+            }
+
+            Yii::$app->session->setFlash('success', 'Cronograma actualizado correctamente.');
+            return $this->redirect(['viewcronograma', 'id' => $id]);
+        }
+
+        // 🔥 Cargamos los detalles ya existentes del cronograma
+        $detalles = DetalleCronograma::find()
+            ->where(['idcronograma' => $cronograma->idcronograma])
+            ->indexBy('idmomento') // para acceso rápido en la vista
+            ->all();
+
+        return $this->render('updatecronograma', [
+            'model' => $model,
+            'detalles' => $detalles, // 💡 esto permite precargar datos en los inputs
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*PAR QUINCE*/
+
+
+
+
+
+
+
+    public function actionFormCamposExtraQuince($idreserva)
+    {
+        $reserva = Reservas::findOne($idreserva);
+        if (!$reserva) {
+            throw new NotFoundHttpException("Reserva no encontrada");
+        }
+
+        // Traer todos los momentos posibles (fijos) del evento
+        $todosMomentos = \app\models\MomentosCronograma::find()
+            ->where(['evento_tipo' => 'quinceanos']) // SOLO MOMENTOS DE BODAS
+            ->orderBy(['seccion' => SORT_ASC, 'orden' => SORT_ASC])
+            ->all();
+
+
+        // Traer los datos actuales por reserva
+        $detalle = \app\models\DetalleCronograma::find()
+            ->where(['idcronograma' => $reserva->idreservas])
+            ->indexBy('idmomento')
+            ->all();
+
+        // Traer los momentos dinámicos personalizados
+        $extras = \app\models\DetalleCronogramaExtra::find()
+            ->where(['idreserva' => $idreserva])
+            ->all();
+
+        // Traer el orden guardado
+        $ordenes = \app\models\FormLayoutOrden::find()
+            ->where(['idreserva' => $idreserva])
+            ->indexBy(function ($item) {
+                return $item->tipo === 'extra' ? 'extra_' . $item->campo : $item->campo;
+            })
+            ->all();
+
+        return $this->render('form-campos-extra-quince', [
+            'reserva' => $reserva,
+            'momentos' => $todosMomentos,
+            'detalle' => $detalle,
+            'extras' => $extras,
+            'ordenes' => $ordenes,
+        ]);
+    }
+
+
+
+
+    public function actionCrearCampoExtraQuince()
+    {
+        $post = Yii::$app->request->post();
+
+        // Validación básica
+        if (empty($post['idreserva']) || empty($post['grupo']) || empty($post['etiqueta'])) {
+            Yii::$app->session->setFlash('error', 'Faltan datos obligatorios.');
+            return $this->redirect(['form-campos-extra-quince', 'idreserva' => $post['idreserva']]);
+        }
+
+        $campo = new \app\models\DetalleCronogramaExtra();
+        $campo->idreserva = $post['idreserva'];
+        $campo->grupo = $post['grupo'];
+        $campo->etiqueta = $post['etiqueta'];
+        $campo->hora_inicio = isset($post['hora_inicio']) ? $post['hora_inicio'] : null;
+        $campo->hora_fin = isset($post['hora_fin']) ? $post['hora_fin'] : null;
+        $campo->proveedor = isset($post['proveedor']) ? $post['proveedor'] : null;
+        $campo->telefono = isset($post['telefono']) ? $post['telefono'] : null;
+        $campo->descripcion = isset($post['descripcion']) ? $post['descripcion'] : null;
+        $campo->orden = isset($post['orden']) ? intval($post['orden']) : null;
+        $campo->fecha_creacion = date('Y-m-d H:i:s');
+
+        if ($campo->save()) {
+            $orden = new \app\models\FormLayoutOrden();
+            $orden->idreserva = $campo->idreserva;
+            $orden->tipo_evento = 'quinceanos';
+            $orden->grupo = $campo->grupo;
+            $orden->campo = (string)$campo->idcampo_extra; // debe coincidir con DetalleCronogramaExtra
+            $orden->tipo = 'extra';
+            $orden->etiqueta = $campo->etiqueta;
+            $orden->orden = $campo->orden !== null ? $campo->orden : (int)\app\models\FormLayoutOrden::find()
+                    ->where(['idreserva' => $campo->idreserva, 'grupo' => $campo->grupo])
+                    ->max('orden') + 1;
+            $orden->activo = 1;
+
+            if (!$orden->save()) {
+                Yii::$app->session->setFlash('error', 'Error al guardar orden.');
+                Yii::error($orden->getErrors(), 'orden-errores');
+            } else {
+                Yii::$app->session->setFlash('success', 'Campo agregado correctamente.');
+            }
+        } else {
+            Yii::$app->session->setFlash('error', 'Error al guardar campo.');
+            Yii::error($campo->getErrors(), 'campo-errores');
+        }
+
+        return $this->redirect(['form-campos-extra-quince', 'idreserva' => $post['idreserva']]);
+    }
+
+
+
+    public function actionGuardarOrdenCamposQuince()
+    {
+        $post = Yii::$app->request->post();
+        $idreserva = isset($post['idreserva']) ? $post['idreserva'] : null;
+
+        if (!$idreserva) {
+            throw new \yii\web\BadRequestHttpException("Reserva no especificada.");
+        }
+
+        $grupos = isset($post['grupo']) ? $post['grupo'] : [];
+        $tipos = isset($post['tipo']) ? $post['tipo'] : [];
+        $ordenes = isset($post['orden']) ? $post['orden'] : [];
+        $tiposEvento = isset($post['tipo_evento']) ? $post['tipo_evento'] : [];
+
+        // Cargar etiquetas de campos fijos desde el helper
+        $camposPorGrupo = \app\components\CamposReservaHelper::getCamposPorGrupo();
+        $etiquetasPorCampo = [];
+        foreach ($camposPorGrupo as $grupoCampos) {
+            foreach ($grupoCampos as $item) {
+                if (isset($item['campo']) && isset($item['label'])) {
+                    $etiquetasPorCampo[$item['campo']] = $item['label'];
+                }
+            }
+        }
+
+        foreach ($grupos as $campo => $grupo) {
+            $tipo = isset($tipos[$campo]) ? $tipos[$campo] : 'fijo';
+            $orden = isset($ordenes[$campo]) ? intval($ordenes[$campo]) : 0;
+            $tipoEvento = isset($tiposEvento[$campo]) ? $tiposEvento[$campo] : 'quinceanos';
+
+            // Determinar valor real del campo
+            $campoOrigen = $campo;
+            if ($tipo === 'extra' && strpos($campo, 'extra_') === 0) {
+                $campoOrigen = substr($campo, 6);
+            }
+
+            // Obtener la etiqueta visible
+            if ($tipo === 'fijo' && isset($etiquetasPorCampo[$campoOrigen])) {
+                $etiqueta = $etiquetasPorCampo[$campoOrigen];
+            } elseif ($tipo === 'extra') {
+                $extra = \app\models\DetalleCronogramaExtra::findOne(['idcampo_extra' => $campoOrigen]);
+                $etiqueta = $extra ? $extra->etiqueta : 'Campo Extra ' . $campoOrigen;
+            } else {
+                $etiqueta = ucwords(str_replace('_', ' ', $campoOrigen));
+            }
+
+            // Buscar si ya existe (por reserva y tipo_evento)
+            $registro = \app\models\FormLayoutOrden::find()
+                ->where([
+                    'campo' => (string) $campoOrigen,
+                    'tipo' => $tipo,
+                    'idreserva' => $idreserva,
+                    'tipo_evento' => $tipoEvento,
+                ])
+                ->one();
+
+            if ($registro) {
+                $registro->grupo = $grupo;
+                $registro->orden = $orden;
+                $registro->campo = (string) $campoOrigen;
+
+                $registro->activo = 1;
+                $registro->tipo_evento = $tipoEvento;
+                $registro->etiqueta = $etiqueta;
+                if (!$registro->save()) {
+                    var_dump($registro->errors);
+                    die;
+                }
+            } else {
+                $nuevo = new \app\models\FormLayoutOrden([
+                    'idreserva' => $idreserva,
+                    'tipo_evento' => $tipoEvento,
+                    'grupo' => $grupo,
+                    'tipo' => $tipo,
+                    'campo' => (string) $campoOrigen, // <- conversión importante
+                    'etiqueta' => $etiqueta,
+                    'orden' => $orden,
+                    'activo' => 1,
+                ]);
+
+                if (!$nuevo->save()) {
+                    var_dump($nuevo->errors);
+                    die;
+                }
+            }
+        }
+
+        Yii::$app->session->setFlash('success', 'Orden actualizado correctamente.');
+        return $this->redirect(['form-campos-extra-quince', 'idreserva' => $idreserva]);
+    }
+
+
+
+
+
+    public function actionEliminarCampoExtraQuince($id, $idreserva)
+    {
+        $campo = \app\models\DetalleCronogramaExtra::findOne($id);
+
+        if ($campo) {
+            // Eliminar su orden relacionado en FormLayoutOrden
+            \app\models\FormLayoutOrden::deleteAll([
+                'campo' => (string)$id, // cast a string para asegurar coincidencia
+                'tipo' => 'extra',
+                'idreserva' => $idreserva
+            ]);
+
+            $campo->delete();
+
+            Yii::$app->session->setFlash('success', 'Campo dinámico eliminado correctamente.');
+        } else {
+            Yii::$app->session->setFlash('error', 'No se encontró el campo dinámico.');
+        }
+
+        return $this->redirect(['form-campos-extra-quince', 'idreserva' => $idreserva]);
+    }
+
+
+
+
+}

@@ -1,0 +1,49 @@
+# ----------------------------------------------------------------------
+# VERDEMANZANA - Seguridad de Apache / LiteSpeed
+# El proyecto se publica desde la raíz (index.php está acá), por eso hay
+# que bloquear explícitamente las carpetas y archivos internos.
+# ----------------------------------------------------------------------
+
+# No listar el contenido de carpetas
+<IfModule mod_autoindex.c>
+  Options -Indexes
+</IfModule>
+
+RewriteEngine on
+
+# 1) Bloquear archivos y carpetas ocultos (.git, .env, .bowerrc, .htaccess...)
+#    excepto .well-known (lo usa el certificado SSL)
+RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+# 2) Bloquear las carpetas internas de Yii (código, configuración, logs, librerías)
+RewriteRule ^(config|controllers|models|components|helpers|commands|mail|modules|views|vendor|runtime|tests|cgi-bin)(/|$) - [F,L,NC]
+
+# 3) Bloquear archivos sueltos que no deben ser públicos
+<FilesMatch "(\.(bak|bat|config|sql|fla|md|psd|ini|log|sh|inc|swp|dist|yml|yaml|zip|lock)|~|^error_log|^requirements\.php|^prueba\.php|^default\.php|^composer\.json|^composer\.lock|^codeception\.yml)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# 4) Cabeceras de seguridad básicas
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# 5) URLs amigables de Yii: si el archivo o carpeta no existe, va a index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.php
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php82” package as the default “PHP” programming language.
+#<IfModule mime_module>
+#  AddHandler application/x-httpd-ea-php82___lsphp .php .php8 .phtml
+#</IfModule>
+# php -- END cPanel-generated handler, do not edit

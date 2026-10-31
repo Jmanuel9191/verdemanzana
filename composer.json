@@ -1,0 +1,108 @@
+{
+    "name": "kartik-v/yii2-app-practical-b",
+    "description": "Yii 2 Practical-B Application Template",
+    "keywords": ["yii2", "framework", "practical", "practical-b", "basic", "application template"],
+    "homepage": "http://demos.krajee.com/app-practical-b",
+    "type": "project",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Kartik Visweswaran",
+            "email": "kartikv2@gmail.com",
+            "homepage": "http://www.krajee.com/"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+
+    "support": {
+        "issues": "https://github.com/yiisoft/yii2/issues?state=open",
+        "forum": "http://www.yiiframework.com/forum/",
+        "wiki": "http://www.yiiframework.com/wiki/",
+        "irc": "irc://irc.freenode.net/yii",
+        "source": "https://github.com/yiisoft/yii2"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.0.0",
+        "yiisoft/yii2": "~2.0.55",
+        "yiisoft/yii2-bootstrap": "~2.0.0",
+        "dmstr/yii2-adminlte-asset" : "2.*",
+        "insolita/yii2-adminlte-widgets": "~2.0",
+        "sadovojav/yii2-image-cutter": "dev-master",
+        "2amigos/yii2-ckeditor-widget" : "2.0",
+        "2amigos/yii2-google-maps-library" : "*",
+        "moonlandsoft/yii2-phpexcel": "*",
+        "mongosoft/yii2-soap-server": "*",
+        "mongosoft/yii2-soap-client": "*",
+        "zelenin/yii2-rss": "~0.1",
+        "kartik-v/yii2-widgets": "*",
+        "kartik-v/bootstrap-fileinput": "@dev",
+        "kartik-v/yii2-money": "dev-master",
+        "kartik-v/yii2-dropdown-x": "dev-master",
+        "zelenin/yii2-semantic-ui": "~2",
+        "omnilight/yii2-shopping-cart": "*",
+        "kop/yii2-scroll-pager": "dev-master",
+        "bigpaulie/yii2-social-share": "dev-master",
+        "yii2mod/yii2-sweet-alert": "*",
+        "yii2mod/yii2-ion-slider": "*",
+        "linslin/yii2-curl": "*",
+        "himiklab/yii2-recaptcha-widget" : "*",
+        "bower-asset/jquery": "^3.6",
+        "google/apiclient": "^2.14",
+        "kartik-v/yii2-date-range": "@dev",
+        "yiisoft/yii2-symfonymailer": "^4.0",
+        "mpdf/mpdf": "~8.2.7",
+        "kartik-v/yii2-export": "~1.4.0",
+        "ckeditor/ckeditor": "4.22.1"
+    },
+    "require-dev": {
+        "yiisoft/yii2-debug": "~2.0.0",
+        "yiisoft/yii2-gii": "~2.0.0",
+        "yiisoft/yii2-faker": "~2.0.0",
+        "codeception/codeception": "^5.0",
+        "codeception/verify": "^1.1",
+        "codeception/specify": "^1.0"
+    },
+    "config": {
+        "process-timeout": 1800,
+        "platform": {
+            "php": "8.3.0"
+        },
+        "fxp-asset":{
+            "enabled": false,
+            "installer-paths": {
+                "npm-asset-library": "vendor/npm",
+                "bower-asset-library": "vendor/bower"
+            }
+        },
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true
+        }
+    },
+
+    "scripts": {
+        "post-create-project-cmd": [
+            "yii\\composer\\Installer::postCreateProject"
+        ]
+    },
+    "extra": {
+        "yii\\composer\\Installer::postCreateProject": {
+            "setPermission": [
+                {
+                    "runtime": "0777",
+                    "assets": "0777",
+                    "yii": "0755"
+                }
+            ],
+            "generateCookieValidationKey": [
+                "config/web.php"
+            ]
+        }
+    }
+}
