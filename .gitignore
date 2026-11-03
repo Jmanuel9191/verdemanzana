@@ -4,6 +4,7 @@
 
 # Librerías de Composer: se reconstruyen con "composer install" (composer.lock sí se guarda)
 /vendor/
+composer.phar
 
 # Archivos generados por Yii (se regeneran solos)
 /runtime/
@@ -11,6 +12,10 @@
 
 # Imágenes y archivos subidos por usuarios (pesan mucho; se respaldan aparte)
 /imagen/
+
+# Comprobantes de pago y archivos privados (datos de clientes: NO van a GitHub)
+/privado/*
+!/privado/.htaccess
 
 # Contraseña de la base de datos (cada entorno tiene la suya)
 /config/db.php
@@ -28,4 +33,14 @@ desktop.ini
 # Configuración de editores
 /.idea/
 /.vscode/
+/nbproject/
+.buildpath
+.project
+.settings
 *.swp
+
+# Tests (Codeception / PHPUnit)
+phpunit.phar
+/phpunit.xml
+tests/_output/*
+tests/_support/_generated

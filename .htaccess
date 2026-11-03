@@ -15,9 +15,9 @@ RewriteEngine on
 #    excepto .well-known (lo usa el certificado SSL)
 RewriteRule (^|/)\.(?!well-known/) - [F,L]
 
-# 2) Bloquear las carpetas internas de Yii (código, configuración, logs, librerías)
-RewriteRule ^(config|controllers|models|components|helpers|commands|mail|modules|views|vendor|runtime|tests|cgi-bin)(/|$) - [F,L,NC]
 
+# 2) Bloquear las carpetas internas de Yii (código, configuración, logs, librerías)
+RewriteRule ^(config|controllers|models|components|helpers|commands|mail|modules|views|vendor|runtime|privado|tests|cgi-bin)(/|$) - [F,L,NC]
 # 3) Bloquear archivos sueltos que no deben ser públicos
 <FilesMatch "(\.(bak|bat|config|sql|fla|md|psd|ini|log|sh|inc|swp|dist|yml|yaml|zip|lock)|~|^error_log|^requirements\.php|^prueba\.php|^default\.php|^composer\.json|^composer\.lock|^codeception\.yml)$">
   <IfModule mod_authz_core.c>

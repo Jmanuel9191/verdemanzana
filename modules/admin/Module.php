@@ -35,7 +35,7 @@ class Module extends \yii\base\Module
             'idParam' => 'admin_id',
             'authKeyParam' => '__authKey_admin',
             'returnUrlParam' => '__returnUrl_admin',
-            'authTimeout' => 360000,                          // admin: 30 min sin actividad
+            'authTimeout' => 36000,                          // admin: 30 min sin actividad
             'authTimeoutParam' => '__expire_admin',
         ]);
     }

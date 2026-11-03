@@ -1,0 +1,9 @@
+# Carpeta privada: comprobantes de pago y otros archivos sensibles.
+# Nunca se sirve directo al navegador; se descarga solo desde el sistema (con permisos).
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>

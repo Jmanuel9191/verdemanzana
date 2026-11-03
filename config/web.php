@@ -52,7 +52,7 @@ $config = [
             'idParam' => '__id_organizadora',
             'authKeyParam' => '__authKey_organizadora',
             'returnUrlParam' => '__returnUrl_organizadora',
-            'authTimeout' => 360000,                          // organizadora: 60 min sin actividad
+            'authTimeout' => 36000,                          // organizadora: 60 min sin actividad
             'authTimeoutParam' => '__expire_organizadora',
         ],
 
@@ -64,7 +64,7 @@ $config = [
             'idParam' => '__id_cliente',
             'authKeyParam' => '__authKey_cliente',
             'returnUrlParam' => '__returnUrl_cliente',
-            'authTimeout' => 360000,                          // cliente: 60 min sin actividad
+            'authTimeout' => 36000,                          // cliente: 60 min sin actividad
             'authTimeoutParam' => '__expire_cliente',
         ],
 

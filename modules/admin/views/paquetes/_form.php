@@ -29,14 +29,14 @@ use yii\helpers\Html;
         'addon' => ['prepend' => ['content' => 'Bs']],
     ])->textInput([
         'inputmode' => 'decimal',
-        'placeholder' => 'Ej. 20000 o 20.000,50',
-    ]) ?>
+        'placeholder' => 'Ej. 280 o 280,50',
+    ])->hint('Precio por invitado') ?>
 
     <?= $form->field($model, 'invitados_incluidos')->input('number', [
         'min' => 0,
         'step' => 1,
-        'placeholder' => 'Opcional',
-    ]) ?>
+        'placeholder' => 'Opcional, ej. 100',
+    ])->hint('Cantidad de invitados con la que arranca la cotización.') ?>
 
     <?= $form->field($model, 'horas_incluidas')->input('number', [
         'min' => 0,
