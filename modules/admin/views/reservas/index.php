@@ -37,9 +37,22 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
         <div class="col-xs-12">
             <div class="box">
 
-                <div class="box-header">
-                    <?= Html::a('Nueva Reserva', ['create'], ['class' => 'btn btn-success']) ?>
-                </div>
+         
+
+
+<div class="box-header">
+    <?= Html::a('Nueva reserva', ['reserva-pasos/create'], ['class' => 'btn btn-success']) ?>
+</div>
+
+<?php foreach (['success' => 'success', 'error' => 'danger'] as $tipoFlash => $clase): ?>
+    <?php if (Yii::$app->session->hasFlash($tipoFlash)): ?>
+        <div class="alert alert-<?= $clase ?> alert-dismissible" style="margin:0 10px 10px">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <?= Html::encode(Yii::$app->session->getFlash($tipoFlash)) ?>
+        </div>
+    <?php endif; ?>
+<?php endforeach; ?>
+
 
                 <div class="box-body ">
 
@@ -97,10 +110,14 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
             [
                 'class' => 'yii\grid\ActionColumn',
                 'header' => 'Operaciones',
-                'template' => '<div class="btn-group btn-group-justified" role="group">{estado}{view}{viewcronograma}{delete}</div>',
-                'buttons' => [
+                'template' => '<div class="btn-group btn-group-justified" role="group">{presupuesto}{estado}{view}{delete}</div>','buttons' => [
                     'estado' => function ($url, $model, $key) {
-                        return Html::a('<i class="toggle fa fa-check"></i>', "#", ['class' => 'btn btn-'.(($model->estado) ? 'success2' : 'default'),'onclick'=>"action('{$url}'); return false;", "title"=>"Visible"]);
+                        $activa = (int)$model->estado === 1;
+                        return Html::a('<i class="toggle fa fa-check"></i>', "#", [
+                            'class' => 'btn btn-' . ($activa ? 'success2' : 'default'),
+                            'onclick' => "cambiarEstado('{$url}'); return false;",
+                            'title' => $activa ? 'Activa (clic para desactivar)' : 'Inactiva (clic para activar)',
+                        ]);
                     },
 
                     'view' => function ($url, $model, $key) {
@@ -109,13 +126,27 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
                     'viewcronograma' => function ($url, $model, $key) {
                         return Html::a('<i class="fa fa-eye"></i>', $url, ['class' => 'btn btn-info guiased', "title" => "Ver GUIA"]);
                     },
+
+                    'presupuesto' => function ($url, $model, $key) {
+                        if (!\app\models\ReservaCotizacion::find()->where(['idreservas' => $model->idreservas])->exists()) {
+                            return '';
+                        }
+                        return Html::a('<i class="fa fa-calculator"></i>', ['reserva-pasos/presupuesto', 'id' => $model->idreservas],
+                            ['class' => 'btn btn-warning', 'title' => 'Presupuesto', 'data-pjax' => '0']);
+                    },
                     'update' => function ($url, $model, $key) {
                         return Html::a('<i class="fa fa-pencil"></i>', $url, ['class' => 'btn btn-success',"title"=>"Editar"]);
                     },
                     'delete' => function ($url, $model, $key) {
-                        return Html::a('<i class="fa fa-trash"></i>', $url, ['class' => 'btn btn-danger', 'data' => [
-                            'confirm' => 'Esta seguro?.'
-                        ], "title" => "Eliminar"]);
+                        return Html::a('<i class="fa fa-trash"></i>', $url, [
+                            'class' => 'btn btn-danger',
+                            'title' => 'Eliminar',
+                            'data-pjax' => '0',
+                            'data' => [
+                                'confirm' => '¿Seguro que querés eliminar esta reserva? No se puede deshacer.',
+                                'method' => 'post',
+                            ],
+                        ]);
                     },
                 ],
                 'contentOptions' => ['class' => 'col-sm-2']
@@ -176,20 +207,21 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
             background: #00a65a;
             border-color: #00a65a;
         }
-        }
     </style>
 
 
 
 
 <?php
+// Activar / desactivar: POST con token de seguridad (antes era GET)
 $script = <<<JS
-    function action(url)
+    function cambiarEstado(url)
     {
-    $.get(url, function(data) {
-      $.pjax.reload({container:"#table"});
-    });
+        $.post(url, {_csrf: yii.getCsrfToken()})
+            .done(function () { $.pjax.reload({container: "#table", timeout: 5000}); })
+            .fail(function (xhr) {
+                alert(xhr.responseJSON && xhr.responseJSON.mensaje ? xhr.responseJSON.mensaje : 'No se pudo cambiar el estado.');
+            });
     }
-
 JS;
 $this->registerJs($script, \yii\web\View::POS_HEAD);

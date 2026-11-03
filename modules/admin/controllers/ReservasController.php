@@ -402,9 +402,31 @@ class ReservasController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionDelete($id)
+   public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $idreservas = (int)$model->idreservas;
+
+        if (\app\models\ReservaPago::tienePagos($idreservas)) {
+            Yii::$app->session->setFlash('error', 'No se puede eliminar la reserva de "' . $model->nombre
+                . '" porque tiene pagos registrados. Si ya no va, desactivala con el botón de estado.');
+            return $this->redirect(['index']);
+        }
+
+        $transaccion = Yii::$app->db->beginTransaction();
+        try {
+            $cotizacion = \app\models\ReservaCotizacion::deReserva($idreservas);
+            if ($cotizacion !== null) {
+                $cotizacion->delete(); // las líneas se borran por la clave foránea (ON DELETE CASCADE)
+            }
+            $model->delete();
+            $transaccion->commit();
+            Yii::$app->session->setFlash('success', 'Reserva de "' . $model->nombre . '" eliminada.');
+        } catch (\Throwable $e) {
+            $transaccion->rollBack();
+            Yii::error($e->getMessage(), __METHOD__);
+            Yii::$app->session->setFlash('error', 'No se pudo eliminar la reserva.');
+        }
 
         return $this->redirect(['index']);
     }
@@ -808,14 +830,20 @@ class ReservasController extends Controller
         }
     }*/
 
-    public function actionEstado($id)
+     public function actionEstado($id)
     {
-        if (!Yii::$app->request->isAjax)
-            $this->redirect(['index']);
-        $model = new Reservas();
-        $model = $model->findOne(['idreservas' => $id]);
-        $model->estado = (string)!$model->estado;
-        $model->save();
+        if (!Yii::$app->request->isPost) {
+            throw new \yii\web\MethodNotAllowedHttpException('Esta acción solo se permite desde el botón.');
+        }
+
+        $model = $this->findModel($id);
+        $nuevo = ((int)$model->estado === 1) ? 0 : 1;
+
+        // updateAttributes: escribe solo "estado", sin validar ni tocar el resto de la reserva
+        $model->updateAttributes(['estado' => $nuevo]);
+
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return ['ok' => true, 'estado' => $nuevo];
     }
 
    /* public function actionDestacado($id)
