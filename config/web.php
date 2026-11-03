@@ -4,6 +4,7 @@ $config = [
     'id' => 'mymcms',
     'basePath' => dirname(__DIR__),
     'language' => 'es',
+        'timeZone' => 'America/La_Paz',
      'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
