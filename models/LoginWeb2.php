@@ -35,7 +35,7 @@ class LoginWeb2 extends Model
     public function attributeLabels()
     {
         return [
-            'username' => 'Email',
+            'username' => 'Email o usuario',
             'password' => 'Contraseña',
         ];
     }

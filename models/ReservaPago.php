@@ -246,6 +246,27 @@ class ReservaPago extends ActiveRecord
         return self::find()->where(['idreservas' => $idreservas])->exists();
     }
 
+    // ---------------------------------------------------------------- relaciones (quién registró / anuló)
+
+    public function getAdminRegistro()
+    {
+        return $this->hasOne(Administrador::class, ['idadmin' => 'idadmin_registro']);
+    }
+
+    public function getAdminAnulo()
+    {
+        return $this->hasOne(Administrador::class, ['idadmin' => 'idadmin_anulo']);
+    }
+
+    /** Usuario del admin para mostrar (es único; el "nombre" a veces se repite). "—" si no se sabe. */
+    public static function nombreAdmin(?Administrador $admin): string
+    {
+        if ($admin === null) {
+            return '—';
+        }
+        return trim((string)$admin->usuario) !== '' ? (string)$admin->usuario : (string)$admin->nombre;
+    }
+
     // ---------------------------------------------------------------- archivo
 
     public static function carpetaReserva(int $idreservas): string

@@ -10,14 +10,36 @@ use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $form PresupuestoForm */
+/* @var $historial app\models\ReservaCotizacionHistorial[] */
 
 $reserva = $form->reserva;
 $esNueva = $reserva->isNewRecord;
 $paquete = $form->paquete;
+$historial = $historial ?? [];
 
-$this->title = $esNueva ? 'Nueva reserva' : 'Reserva: ' . $reserva->nombre;
+// Qué se muestra según la pantalla:
+//  crear       → cliente + presupuesto editable
+//  datos       → cliente editable + presupuesto solo para ver (con botón "Modificar presupuesto")
+//  presupuesto → solo el presupuesto editable (pantalla "Modificar presupuesto")
+$modo = $form->modo;
+$verCliente = $modo !== PresupuestoForm::MODO_PRESUPUESTO;
+$editarLineas = $modo !== PresupuestoForm::MODO_DATOS;
+$esModificar = $modo === PresupuestoForm::MODO_PRESUPUESTO;
+
+if ($esNueva) {
+    $this->title = 'Nueva reserva';
+} elseif ($esModificar) {
+    $this->title = 'Modificar presupuesto: ' . $reserva->nombre;
+} else {
+    $this->title = 'Reserva: ' . $reserva->nombre;
+}
 $this->params['breadcrumbs'][] = ['label' => 'Reservas', 'url' => ['reservas/index']];
-$this->params['breadcrumbs'][] = $this->title;
+if ($esModificar) {
+    $this->params['breadcrumbs'][] = ['label' => $reserva->nombre, 'url' => ['presupuesto', 'id' => $reserva->idreservas]];
+    $this->params['breadcrumbs'][] = 'Modificar presupuesto';
+} else {
+    $this->params['breadcrumbs'][] = $this->title;
+}
 
 $catalogoPaquetes = PresupuestoForm::catalogoPaquetes();
 $catalogoItems = PresupuestoForm::catalogoItems();
@@ -52,7 +74,8 @@ foreach ($lineas as $l) {
 $tmp->recalcularTotales($lineas);
 $pagado = $esNueva ? '0' : $form->cotizacion->getTotalPagado();
 
-$errores = array_merge($form->getErrors('paquete'), $form->getErrors('extras'), $form->getErrors('archivo'), $form->getErrors('reserva'));
+$errores = array_merge($form->getErrors('paquete'), $form->getErrors('extras'), $form->getErrors('archivo'),
+    $form->getErrors('reserva'), $form->getErrors('motivo'));
 ?>
 <section class="content-header">
     <h1><?= Html::encode($this->title) ?></h1>
@@ -95,8 +118,19 @@ $errores = array_merge($form->getErrors('paquete'), $form->getErrors('extras'), 
         'options' => ['enctype' => 'multipart/form-data'],
     ]); ?>
 
-    <div class="box box-success caja-paso">
+    <div class="box box-<?= $esModificar ? 'warning' : 'success' ?> caja-paso">
 
+        <?php if ($esModificar): ?>
+            <div class="box-body">
+                <div class="alert alert-warning aviso-modificar">
+                    <i class="fa fa-info-circle"></i>
+                    Estás modificando el presupuesto de una reserva ya creada. Al guardar, el cambio queda registrado en el historial
+                    (qué se agregó, quitó o cambió, el total anterior y el nuevo, quién y cuándo).
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($verCliente): ?>
         <!-- ===================== DATOS DEL CLIENTE Y DEL EVENTO ===================== -->
         <div class="box-body">
             <h3 class="titulo-seccion"><i class="fa fa-user"></i> Cliente y evento</h3>
@@ -141,11 +175,33 @@ $errores = array_merge($form->getErrors('paquete'), $form->getErrors('extras'), 
                 <div class="col-md-6">
                     <?= $af->field($reserva, 'nombre')->textInput(['maxlength' => true])->label('Nombre(s) del cliente') ?>
                     <?= $af->field($reserva, 'telefono')->textInput(['maxlength' => 20, 'inputmode' => 'numeric', 'placeholder' => 'Solo números, ej. 70012345'])->label('Teléfono') ?>
-                    <?= $af->field($reserva, 'email')->input('email', ['maxlength' => true])
-                        ->label('Email para iniciar sesión')->hint('Es el usuario del cliente. No se puede repetir.') ?>
+                    <?= $af->field($reserva, 'email')->textInput(['maxlength' => 250, 'autocomplete' => 'off', 'placeholder' => 'Ej. ana.luis@gmail.com o analuis2027'])
+                        ->label('Email o usuario para iniciar sesión')->hint('Es el usuario del cliente: puede ser un email o un nombre. Sin espacios. No se puede repetir.') ?>
+
+                    <?php if ($esNueva): ?>
+                        <?= $this->render('_campo_contrasena', [
+                            'nombre'   => 'PresupuestoForm[contrasena]',
+                            'etiqueta' => 'Contraseña del cliente',
+                            'error'    => $form->getFirstError('contrasena'),
+                            'valor'    => $form->hasErrors() ? $form->contrasena : '',
+                        ]) ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
+
+        <?php endif; /* $verCliente */ ?>
+
+        <?php if (!$editarLineas): ?>
+            <?= $this->render('_presupuesto_lectura', ['form' => $form, 'pagado' => $pagado]) ?>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <?= $this->render('_archivo_presupuesto', ['reserva' => $reserva]) ?>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
 
         <!-- ===================== PAQUETE ===================== -->
         <div class="box-body">
@@ -261,19 +317,13 @@ $errores = array_merge($form->getErrors('paquete'), $form->getErrors('extras'), 
                 <div class="col-md-6">
                     <?= $af->field($form, 'observaciones')->textarea(['rows' => 4, 'placeholder' => 'Condiciones, aclaraciones, validez del presupuesto...']) ?>
 
-                    <div class="form-group">
-                        <label class="control-label">Presupuesto archivo <small class="text-muted">(opcional: PDF, Word, Excel o imagen, máx. 20 MB)</small></label>
-                        <input type="file" name="archivo_presupuesto" class="form-control"
-                               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp">
-                        <?php if (!$esNueva && $reserva->presupuestofile && is_file(Yii::getAlias('@webroot') . '/imagen/usuarios/' . basename($reserva->presupuestofile))): ?>
-                            <p class="help-block">
-                                Archivo actual:
-                                <?= Html::a('<i class="fa fa-download"></i> ' . Html::encode($reserva->presupuestofile),
-                                    Url::to('@web/imagen/usuarios/' . basename($reserva->presupuestofile)), ['target' => '_blank']) ?>
-                                — si subís otro, se reemplaza.
-                            </p>
-                        <?php endif; ?>
-                    </div>
+                    <?php if ($esModificar): ?>
+                        <?= $af->field($form, 'motivo')->textarea(['rows' => 2, 'maxlength' => 500,
+                            'placeholder' => 'Opcional. Ej. El cliente pidió 10 invitados más.'])
+                            ->hint('Opcional. Queda guardado en el historial junto con los cambios.') ?>
+                    <?php else: ?>
+                        <?= $this->render('_archivo_presupuesto', ['reserva' => $reserva]) ?>
+                    <?php endif; ?>
                 </div>
                 <div class="col-md-6">
                     <table class="table tabla-totales">
@@ -289,11 +339,27 @@ $errores = array_merge($form->getErrors('paquete'), $form->getErrors('extras'), 
             </div>
         </div>
 
+        <?php endif; /* $editarLineas */ ?>
+
+        <?php if (!$esNueva): ?>
+            <?= $this->render('_historial', ['historial' => $historial, 'cotizacion' => $form->cotizacion]) ?>
+        <?php endif; ?>
+
         <div class="box-footer">
-            <?= Html::submitButton('<i class="fa fa-save"></i> ' . ($esNueva ? 'Guardar presupuesto y crear reserva' : 'Guardar cambios'), [
-                'class' => 'btn btn-success btn-lg',
+            <?php
+            if ($esNueva) {
+                $textoBoton = 'Guardar presupuesto y crear reserva';
+            } elseif ($esModificar) {
+                $textoBoton = 'Guardar cambios del presupuesto';
+            } else {
+                $textoBoton = 'Guardar datos de la reserva';
+            }
+            ?>
+            <?= Html::submitButton('<i class="fa fa-save"></i> ' . $textoBoton, [
+                'class' => 'btn btn-' . ($esModificar ? 'warning' : 'success') . ' btn-lg',
             ]) ?>
-            <?= Html::a('Cancelar', ['reservas/index'], ['class' => 'btn btn-default btn-lg']) ?>
+            <?= Html::a('Cancelar', $esModificar ? ['presupuesto', 'id' => $reserva->idreservas] : ['reservas/index'],
+                ['class' => 'btn btn-default btn-lg']) ?>
         </div>
     </div>
 
@@ -332,6 +398,21 @@ $this->registerCss(<<<CSS
 .calendario-sucursal td.ocupado, .muestra-ocupado { background:#527f1a !important; color:#fff !important; border-radius:3px; }
 .muestra-ocupado { display:inline-block; width:14px; height:14px; vertical-align:middle; }
 .calendario-sucursal td.active { background:#f0ad4e !important; color:#fff !important; }
+.aviso-modificar { margin-bottom:0; }
+.tabla-lectura td { vertical-align:middle !important; }
+.tabla-lectura .fila-paquete-lectura td { background:#fafcf7; }
+.observaciones-lectura { background:#fafafa; border:1px solid #eee; padding:8px 12px; border-radius:3px; }
+.historial-presupuesto .enlace-historial { color:#527f1a; text-decoration:none; display:block; }
+.historial-presupuesto .enlace-historial .badge { background:#527f1a; vertical-align:middle; }
+.historial-presupuesto .flecha { float:right; font-size:14px; margin-top:6px; transition:transform .2s; }
+.historial-presupuesto .enlace-historial:not(.collapsed) .flecha { transform:rotate(180deg); }
+.lista-historial { list-style:none; padding:0; margin:0; }
+.lista-historial > li { border-left:3px solid #f0ad4e; background:#fffdf7; padding:8px 12px; margin-bottom:10px; border-radius:0 3px 3px 0; }
+.lista-historial > li.evento-creado { border-left-color:#527f1a; background:#fafcf7; }
+.lista-historial .cabecera-evento { font-size:13px; }
+.lista-historial .motivo-evento { font-size:12px; color:#8a6d3b; margin-top:3px; }
+.lista-historial .cambios-evento { margin:6px 0 0; padding-left:18px; font-size:13px; }
+.lista-historial .cambios-evento li { margin-bottom:2px; }
 CSS);
 
 // ---------------------------------------------------------------- datos para el JavaScript
@@ -341,6 +422,7 @@ $datosJs = Json::htmlEncode([
     'ocupadas' => $form->fechasOcupadas(),
     'pagado'   => (float)$pagado,
     'siguienteIndice' => count($form->extras) + 1000,
+    'tipoEvento' => (string)$reserva->tipoevento,
 ]);
 $idFecha = Html::getInputId($reserva, 'fecha_reserva');
 $idSucursal = Html::getInputId($reserva, 'sucursal');
@@ -393,6 +475,7 @@ $this->registerJs(<<<JS
     }
 
     function calcularTotales() {
+        if (!$('#tabla-paquete').length) return;   // presupuesto solo para ver
         var sub = 0, desc = 0, tot = 0;
         $('.fila-linea').each(function () {
             var f = $(this);
@@ -491,7 +574,8 @@ $this->registerJs(<<<JS
 
     // ---- filtrar paquetes e ítems por tipo de evento
     function filtrarPorTipo(contexto) {
-        var tipo = $('#$idTipo').val();
+        // En "Modificar presupuesto" no está el selector: se usa el tipo de la reserva
+        var tipo = $('#$idTipo').length ? $('#$idTipo').val() : D.tipoEvento;
         (contexto || $(document)).find('#sel-paquete option, .sel-item option').each(function () {
             var t = $(this).data('tipo-evento');
             if (!t) return;
@@ -507,6 +591,7 @@ $this->registerJs(<<<JS
         return d.getFullYear() + '-' + m + '-' + dia;
     }
     function revisarFecha() {
+        if (!$('#$idFecha').length) return;   // pantalla sin datos del cliente
         var f = $('#$idFecha').val(), s = $('#$idSucursal').val();
         var ocupada = f && D.ocupadas[s] && D.ocupadas[s].indexOf(f) !== -1;
         $('#aviso-fecha').toggle(!!ocupada)

@@ -3,16 +3,17 @@
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */
-/* @var $actual string  'presupuesto' | 'pagos' | 'detalles' */
+/* @var $actual string  'presupuesto' | 'pagos' | 'detalles' | 'cronograma' */
 /* @var $idreservas int|null  null = reserva todavía no guardada */
 
 $pasos = [
     'presupuesto' => ['1', 'Presupuesto', 'fa-calculator', 'presupuesto'],
     'pagos'       => ['2', 'Pagos', 'fa-money', 'pagos'],
     'detalles'    => ['3', 'Detalles', 'fa-list-alt', 'detalles'],
+    'cronograma'  => ['4', 'Cronograma', 'fa-clock-o', 'cronograma'],
 ];
 // Pasos que todavía no están programados (se habilitan cuando existan las acciones)
-$disponibles = ['presupuesto'];
+$disponibles = ['presupuesto', 'pagos', 'detalles', 'cronograma'];
 ?>
 <ul class="nav nav-tabs pasos-reserva">
     <?php foreach ($pasos as $clave => [$numero, $texto, $icono, $accion]): ?>

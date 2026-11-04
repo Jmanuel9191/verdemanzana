@@ -4,7 +4,7 @@ $config = [
     'id' => 'mymcms',
     'basePath' => dirname(__DIR__),
     'language' => 'es',
-        'timeZone' => 'America/La_Paz',
+    'timeZone' => 'America/La_Paz',   // Bolivia (UTC-4, sin horario de verano)
      'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -93,7 +93,17 @@ $config = [
                 ],
             ],
         ],
-        'db' => require(__DIR__ . '/db.php'),
+        'db' => array_merge(require(__DIR__ . '/db.php'), [
+            // Hora de Bolivia también en MySQL/MariaDB (NOW(), CURRENT_TIMESTAMP).
+            // Se usa '-04:00' porque MariaDB del hosting puede no tener cargados los nombres de zona.
+            'on afterOpen' => function ($event) {
+                $event->sender->createCommand("SET time_zone = '-04:00'")->execute();
+            },
+        ]),
+        'formatter' => [
+            'timeZone'        => 'America/La_Paz',
+            'defaultTimeZone' => 'America/La_Paz', // las fechas guardadas en la base ya están en hora local
+        ],
 
         'urlManager' => [
             //'scriptUrl'=>'/admin/index.php',

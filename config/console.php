@@ -6,6 +6,7 @@ $db = require(__DIR__ . '/db.php');
 $config = [
     'id' => 'practical-b-console',
     'basePath' => dirname(__DIR__),
+    'timeZone' => 'America/La_Paz',
     'bootstrap' => ['log'],
     'controllerNamespace' => 'app\commands',
     'components' => [
@@ -20,7 +21,11 @@ $config = [
                 ],
             ],
         ],
-        'db' => $db,
+        'db' => array_merge($db, [
+            'on afterOpen' => function ($event) {
+                $event->sender->createCommand("SET time_zone = '-04:00'")->execute();
+            },
+        ]),
     ],
     'params' => $params,
     /*

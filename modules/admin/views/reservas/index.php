@@ -66,8 +66,20 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
             //'idusuario',
             'nombre',
             'telefono',
-            'sucursal',
-            'tipoevento',
+            [
+                'attribute' => 'sucursal',
+                'filter' => \app\models\PresupuestoForm::SUCURSALES,
+                'filterInputOptions' => ['class' => 'form-control', 'prompt' => 'Todas'],
+            ],
+            [
+                'attribute' => 'tipoevento',
+                'label' => 'Tipo de evento',
+                'filter' => \app\models\PresupuestoForm::TIPOS_EVENTO,
+                'filterInputOptions' => ['class' => 'form-control', 'prompt' => 'Todos'],
+                'value' => function ($model) {
+                    return \app\models\PresupuestoForm::TIPOS_EVENTO[$model->tipoevento] ?? $model->tipoevento;
+                },
+            ],
                                 'limite_invitados',
 
 
@@ -110,7 +122,7 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
             [
                 'class' => 'yii\grid\ActionColumn',
                 'header' => 'Operaciones',
-                'template' => '<div class="btn-group btn-group-justified" role="group">{presupuesto}{estado}{view}{delete}</div>','buttons' => [
+                'template' => '<div class="btn-group btn-group-justified" role="group">{presupuesto}{pagos}{estado}{view}{delete}</div>','buttons' => [
                     'estado' => function ($url, $model, $key) {
                         $activa = (int)$model->estado === 1;
                         return Html::a('<i class="toggle fa fa-check"></i>', "#", [
@@ -121,6 +133,11 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
                     },
 
                     'view' => function ($url, $model, $key) {
+                        // Reservas nuevas (con presupuesto por pasos) → ficha nueva; las viejas → vista de siempre
+                        if (\app\models\ReservaCotizacion::find()->where(['idreservas' => $model->idreservas])->exists()) {
+                            return Html::a('<i class="fa fa-eye"></i>', ['reserva-pasos/ver', 'id' => $model->idreservas],
+                                ['class' => 'btn btn-info', 'title' => 'Ver reserva', 'data-pjax' => '0']);
+                        }
                         return Html::a('<i class="fa fa-eye"></i>', $url, ['class' => 'btn btn-info', "title" => "Ver"]);
                     },
                     'viewcronograma' => function ($url, $model, $key) {
@@ -133,6 +150,13 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
                         }
                         return Html::a('<i class="fa fa-calculator"></i>', ['reserva-pasos/presupuesto', 'id' => $model->idreservas],
                             ['class' => 'btn btn-warning', 'title' => 'Presupuesto', 'data-pjax' => '0']);
+                    },
+                    'pagos' => function ($url, $model, $key) {
+                        if (!\app\models\ReservaCotizacion::find()->where(['idreservas' => $model->idreservas])->exists()) {
+                            return '';
+                        }
+                        return Html::a('<i class="fa fa-money"></i>', ['reserva-pasos/pagos', 'id' => $model->idreservas],
+                            ['class' => 'btn btn-primary', 'title' => 'Pagos', 'data-pjax' => '0']);
                     },
                     'update' => function ($url, $model, $key) {
                         return Html::a('<i class="fa fa-pencil"></i>', $url, ['class' => 'btn btn-success',"title"=>"Editar"]);

@@ -59,6 +59,40 @@ class PresupuestoForm extends Model
     /** @var ReservaCotizacionDetalle[] líneas que estaban guardadas y se quitaron */
     private $extrasQuitados = [];
 
+    /**
+     * Qué parte del formulario se usa:
+     *  - MODO_CREAR:       reserva nueva, todo junto (cliente + presupuesto)
+     *  - MODO_DATOS:       editar reserva existente: solo cliente/evento y archivo (el presupuesto no se toca)
+     *  - MODO_PRESUPUESTO: pantalla aparte "Modificar presupuesto": solo paquete, ítems y observaciones
+     */
+    public const MODO_CREAR = 'crear';
+    public const MODO_DATOS = 'datos';
+    public const MODO_PRESUPUESTO = 'presupuesto';
+
+    /** @var string */
+    public $modo = self::MODO_CREAR;
+
+    /** Largo mínimo de la contraseña del cliente */
+    public const CONTRASENA_MIN = 6;
+
+    /** @var string|null contraseña del cliente (solo al crear; se guarda en MD5) */
+    public $contrasena;
+
+    /** @var string|null motivo del cambio (opcional, solo en MODO_PRESUPUESTO) */
+    public $motivo;
+
+    /** @var array foto de las líneas antes de modificar (para el historial) */
+    private $fotoAntes = [];
+
+    /** @var string|null observaciones antes de modificar */
+    private $observacionesAntes;
+
+    /** @var string|null total antes de modificar */
+    private $totalAntes;
+
+    /** @var array cambios detectados al guardar (para el mensaje de la pantalla) */
+    public $cambios = [];
+
     // ---------------------------------------------------------------- creación
 
     /** Formulario vacío para una reserva nueva. */
@@ -82,6 +116,12 @@ class PresupuestoForm extends Model
         $form->observaciones = $cotizacion->observaciones;
         $form->paquete = $cotizacion->lineaPaquete;
         $form->extras = $cotizacion->lineasExtras;
+        $form->modo = self::MODO_DATOS;
+
+        // Foto de cómo está el presupuesto ahora, para comparar al guardar
+        $form->fotoAntes = ReservaCotizacionHistorial::foto($form->todasLasLineas());
+        $form->observacionesAntes = $cotizacion->observaciones;
+        $form->totalAntes = $cotizacion->total;
         return $form;
     }
 
@@ -90,6 +130,8 @@ class PresupuestoForm extends Model
         return [
             'observaciones' => 'Observaciones del presupuesto',
             'archivo'       => 'Presupuesto archivo',
+            'motivo'        => 'Motivo del cambio',
+            'contrasena'    => 'Contraseña del cliente',
         ];
     }
 
@@ -106,15 +148,37 @@ class PresupuestoForm extends Model
      */
     public function load($data, $formName = null)
     {
-        if (!isset($data['Reservas'])) {
+        $cargaReserva = $this->modo !== self::MODO_PRESUPUESTO;
+        $cargaPresupuesto = $this->modo !== self::MODO_DATOS;
+
+        if ($cargaReserva && !isset($data['Reservas'])) {
+            return false;
+        }
+        if (!$cargaReserva && !isset($data['Paquete'])) {
             return false;
         }
 
         // 1) Reserva: solo las columnas de este paso (nada de contraseña, montos, etc.)
-        $datosReserva = array_intersect_key((array)$data['Reservas'], array_flip(self::CAMPOS_RESERVA));
-        $this->reserva->setAttributes(array_map(function ($v) {
-            return is_string($v) ? trim($v) : $v;
-        }, $datosReserva), false);
+        if ($cargaReserva) {
+            $datosReserva = array_intersect_key((array)$data['Reservas'], array_flip(self::CAMPOS_RESERVA));
+            $this->reserva->setAttributes(array_map(function ($v) {
+                return is_string($v) ? trim($v) : $v;
+            }, $datosReserva), false);
+            $this->archivo = UploadedFile::getInstanceByName('archivo_presupuesto');
+            if ($this->modo === self::MODO_CREAR) {
+                $this->contrasena = isset($data['PresupuestoForm']['contrasena'])
+                    ? trim((string)$data['PresupuestoForm']['contrasena'])
+                    : null;
+            }
+        }
+
+        if (!$cargaPresupuesto) {
+            return true;   // al editar datos, el presupuesto queda como está
+        }
+
+        $this->motivo = isset($data['PresupuestoForm']['motivo'])
+            ? trim((string)$data['PresupuestoForm']['motivo'])
+            : null;
 
         $this->observaciones = isset($data['PresupuestoForm']['observaciones'])
             ? trim((string)$data['PresupuestoForm']['observaciones'])
@@ -126,7 +190,6 @@ class PresupuestoForm extends Model
         // 3) Ítems / proveedores
         $this->cargarExtras((array)($data['Lineas'] ?? []));
 
-        $this->archivo = UploadedFile::getInstanceByName('archivo_presupuesto');
         return true;
     }
 
@@ -215,6 +278,25 @@ class PresupuestoForm extends Model
 
         $r = $this->reserva;
 
+        if ($this->modo !== self::MODO_PRESUPUESTO) {
+            $this->validarReserva($r);
+        }
+        if ($this->modo === self::MODO_CREAR) {
+            $error = self::errorContrasena($this->contrasena);
+            if ($error !== null) {
+                $this->addError('contrasena', $error);
+            }
+        }
+        if ($this->modo !== self::MODO_DATOS) {
+            $this->validarPresupuesto();
+        }
+        $this->validarArchivo();
+
+        return !$this->hasErrors() && !$r->hasErrors();
+    }
+
+    private function validarReserva(Reservas $r): void
+    {
         // Datos de la reserva (reglas del modelo Reservas para estos campos)
         $r->validate(self::CAMPOS_RESERVA, false);
 
@@ -233,19 +315,27 @@ class PresupuestoForm extends Model
             $r->addError('tipoevento', 'Tipo de evento inválido.');
         }
         if ($r->email) {
-            if (!filter_var($r->email, FILTER_VALIDATE_EMAIL)) {
-                $r->addError('email', 'El email no es válido.');
+            // Es el usuario de login del cliente: puede ser un email o un nombre de usuario
+            // (no se exige "@"). Solo se pide que no tenga espacios y que no se repita.
+            if (preg_match('/\s/u', (string)$r->email)) {
+                $r->addError('email', 'El usuario no puede tener espacios.');
+            } elseif (mb_strlen((string)$r->email) > 250) {
+                $r->addError('email', 'El usuario puede tener hasta 250 caracteres.');
             } else {
                 $existe = Reservas::find()
                     ->where(['email' => $r->email])
                     ->andFilterWhere(['<>', 'idreservas', $r->idreservas])
                     ->exists();
                 if ($existe) {
-                    $r->addError('email', 'Ya existe otra reserva con este email (es el usuario de login del cliente).');
+                    $r->addError('email', 'Ya existe otra reserva con este usuario/email (es el usuario de login del cliente).');
                 }
             }
         }
 
+    }
+
+    private function validarPresupuesto(): void
+    {
         // Paquete obligatorio
         if ($this->paquete === null) {
             $this->addError('paquete', 'Elegí un paquete.');
@@ -270,6 +360,13 @@ class PresupuestoForm extends Model
             }
         }
 
+        if ($this->motivo !== null && mb_strlen($this->motivo) > 500) {
+            $this->addError('motivo', 'El motivo puede tener hasta 500 caracteres.');
+        }
+    }
+
+    private function validarArchivo(): void
+    {
         // Archivo de presupuesto (opcional)
         if ($this->archivo !== null) {
             $ext = strtolower($this->archivo->extension);
@@ -281,8 +378,6 @@ class PresupuestoForm extends Model
                 $this->addError('archivo', 'No se pudo subir el archivo.');
             }
         }
-
-        return !$this->hasErrors() && !$r->hasErrors();
     }
 
     /** Total con las líneas actuales (ya calculadas por validate()). */
@@ -309,64 +404,92 @@ class PresupuestoForm extends Model
 
         $r = $this->reserva;
         $esNueva = $r->isNewRecord;
+        $guardaReserva = $this->modo !== self::MODO_PRESUPUESTO;
+        $guardaPresupuesto = $this->modo !== self::MODO_DATOS;
+
+        // ¿Qué cambió en el presupuesto? (si no cambió nada, no se toca la base)
+        if ($guardaPresupuesto && !$esNueva) {
+            $this->cambios = ReservaCotizacionHistorial::comparar(
+                $this->fotoAntes,
+                ReservaCotizacionHistorial::foto($this->todasLasLineas()),
+                $this->observacionesAntes,
+                $this->observaciones !== '' ? $this->observaciones : null
+            );
+            if ($this->modo === self::MODO_PRESUPUESTO && empty($this->cambios)) {
+                return true;
+            }
+        }
+
         $archivoGuardado = null;
         $anterior = null;
 
         $transaccion = Yii::$app->db->beginTransaction();
         try {
             // 1) Reserva (reservas1)
-            if ($esNueva) {
-                $r->fecha_registro = date('Y-m-d H:i:s');
-                $r->estado = 1;
-                // Sin contraseña: el cliente no puede entrar hasta que se la asignen
-                // desde "Cambiar contraseña" (igual que hoy).
-                $r->contrasena = '';
-                // reservas1 tiene columnas NOT NULL sin valor por defecto (ej. "presupuesto",
-                // que es LONGTEXT). MySQL estricto rechaza el INSERT si no van: se completan vacías.
-                // Después sincronizarReserva() llena "presupuesto" con el total real.
-                $this->completarColumnasObligatorias($r);
-            }
-
-            if ($this->archivo !== null) {
-                $nombre = Yii::$app->security->generateRandomString() . '_presupuesto.' . strtolower($this->archivo->extension);
-                $ruta = Yii::getAlias('@webroot') . '/imagen/usuarios/' . $nombre;
-                if (!$this->archivo->saveAs($ruta)) {
-                    throw new \RuntimeException('No se pudo guardar el archivo de presupuesto.');
+            if ($guardaReserva) {
+                if ($esNueva) {
+                    $r->fecha_registro = date('Y-m-d H:i:s');
+                    $r->estado = 1;
+                    // Contraseña del cliente en MD5 (como el resto del sistema; bcrypt más adelante)
+                    $r->contrasena = md5((string)$this->contrasena);
+                    // reservas1 tiene columnas NOT NULL sin valor por defecto (ej. "presupuesto",
+                    // que es LONGTEXT). MySQL estricto rechaza el INSERT si no van: se completan vacías.
+                    // Después sincronizarReserva() llena "presupuesto" con el total real.
+                    $this->completarColumnasObligatorias($r);
                 }
-                $archivoGuardado = $ruta;
-                $anterior = $r->presupuestofile;
-                $r->presupuestofile = $nombre;
-            }
 
-            if (!$r->save(false)) {
-                throw new \RuntimeException('No se pudo guardar la reserva.');
-            }
+                if ($this->archivo !== null) {
+                    $nombre = Yii::$app->security->generateRandomString() . '_presupuesto.' . strtolower($this->archivo->extension);
+                    $ruta = Yii::getAlias('@webroot') . '/imagen/usuarios/' . $nombre;
+                    if (!$this->archivo->saveAs($ruta)) {
+                        throw new \RuntimeException('No se pudo guardar el archivo de presupuesto.');
+                    }
+                    $archivoGuardado = $ruta;
+                    $anterior = $r->presupuestofile;
+                    $r->presupuestofile = $nombre;
+                }
 
-            // 2) Cotización
-            $c = $this->cotizacion;
-            $c->idreservas = $r->idreservas;
-            $c->idpaquete = $this->paquete->idorigen;
-            $c->observaciones = $this->observaciones !== '' ? $this->observaciones : null;
-            $c->recalcularTotales($this->todasLasLineas());
-            if (!$c->save(false)) {
-                throw new \RuntimeException('No se pudo guardar el presupuesto.');
-            }
-
-            // 3) Líneas
-            foreach ($this->extrasQuitados as $linea) {
-                $linea->delete();
-            }
-            $orden = 0;
-            foreach ($this->todasLasLineas() as $linea) {
-                $linea->idcotizacion = $c->idcotizacion;
-                $linea->orden = $orden++;
-                if (!$linea->save(false)) {
-                    throw new \RuntimeException('No se pudo guardar la línea ' . $linea->nombre . '.');
+                if (!$r->save(false)) {
+                    throw new \RuntimeException('No se pudo guardar la reserva.');
                 }
             }
 
-            // 4) Copiar totales, paquete y límite de invitados a reservas1
-            $c->sincronizarReserva();
+            if ($guardaPresupuesto) {
+                // 2) Cotización
+                $c = $this->cotizacion;
+                $c->idreservas = $r->idreservas;
+                $c->idpaquete = $this->paquete->idorigen;
+                $c->observaciones = $this->observaciones !== '' ? $this->observaciones : null;
+                $c->recalcularTotales($this->todasLasLineas());
+                if (!$c->save(false)) {
+                    throw new \RuntimeException('No se pudo guardar el presupuesto.');
+                }
+
+                // 3) Líneas
+                foreach ($this->extrasQuitados as $linea) {
+                    $linea->delete();
+                }
+                $orden = 0;
+                foreach ($this->todasLasLineas() as $linea) {
+                    $linea->idcotizacion = $c->idcotizacion;
+                    $linea->orden = $orden++;
+                    if (!$linea->save(false)) {
+                        throw new \RuntimeException('No se pudo guardar la línea ' . $linea->nombre . '.');
+                    }
+                }
+
+                // 4) Historial: quién, cuándo, qué cambió, total anterior → nuevo
+                if ($esNueva) {
+                    $this->cambios = ReservaCotizacionHistorial::comparar([], ReservaCotizacionHistorial::foto($this->todasLasLineas()));
+                    ReservaCotizacionHistorial::registrar($c, ReservaCotizacionHistorial::ACCION_CREADO, null, $this->cambios, null);
+                } elseif (!empty($this->cambios)) {
+                    ReservaCotizacionHistorial::registrar($c, ReservaCotizacionHistorial::ACCION_MODIFICADO,
+                        $this->totalAntes, $this->cambios, $this->motivo);
+                }
+
+                // 5) Copiar totales, paquete y límite de invitados a reservas1
+                $c->sincronizarReserva();
+            }
 
             $transaccion->commit();
         } catch (\Throwable $e) {
@@ -392,6 +515,25 @@ class PresupuestoForm extends Model
         }
 
         return true;
+    }
+
+    /**
+     * Revisa una contraseña nueva del cliente. Devuelve el mensaje de error o null si está bien.
+     * (Se usa al crear la reserva y en "Cambiar contraseña".)
+     */
+    public static function errorContrasena(?string $contrasena): ?string
+    {
+        $contrasena = trim((string)$contrasena);
+        if ($contrasena === '') {
+            return 'Escribí la contraseña del cliente.';
+        }
+        if (mb_strlen($contrasena) < self::CONTRASENA_MIN) {
+            return 'La contraseña tiene que tener al menos ' . self::CONTRASENA_MIN . ' caracteres.';
+        }
+        if (mb_strlen($contrasena) > 100) {
+            return 'La contraseña puede tener hasta 100 caracteres.';
+        }
+        return null;
     }
 
     /**

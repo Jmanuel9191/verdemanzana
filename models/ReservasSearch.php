@@ -18,6 +18,8 @@ class ReservasSearch extends Reservas
     {
         return [
             [['idreservas'], 'integer'],
+            [['idorganizadora'], 'integer'],
+            [['tipoevento'], 'safe'],
             [['fecha_registro', 'fecha_reserva','paquete_reservar','mensaje','presupuesto', 'servicios_adicionales', 'tipo_bebidas', 'vajillasyvasisenmesa', 'katering', 'nombre_decoradora', 'detalle_decoradora', 'paquete_reservar', 'nombre','email', 'mensaje','presupuesto', 'servicios_adicionales', 'tipo_bebidas', 'vajillasyvasisenmesa', 'katering', 'nombre_decoradora', 'detalle_decoradora', 'sucursal', 'nombre_subcordinadora','otros_detalles', 'email', 'monto_canceladop', 'saldo_pagarp', 'monto_cancelados', 'saldo_pagars', 'tipo_evento', 'hora_inicio', 'cant_garzones', 'color_sillas', 'color_mantel', 'color_servilleta', 'en_mesa', 'nombre_cordinadora', 'nombre_supervisora', 'contrasena', 'detalle_decoracioniglesia' ], 'safe'],
         ];
     }
@@ -58,6 +60,9 @@ class ReservasSearch extends Reservas
 
         // grid filtering conditions
         $query->andFilterWhere([
+            'sucursal' => $this->sucursal,
+            'tipoevento' => $this->tipoevento,
+            'idorganizadora' => $this->idorganizadora,
             'idreservas' => $this->idreservas,
             'fecha_reserva' => $this->fecha_reserva,
             'fecha_registro' => $this->fecha_registro,

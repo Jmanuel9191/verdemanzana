@@ -172,7 +172,7 @@ $configuracion['titulo_pagina']= $model['nombre'];
                                 <div class="col-xs-12">  <h3> <strong>  DATOS GENERALES DEL EVENTO: </strong> </h3>        </div>
                                 <div class="col-md-7 col-xs-12">
 
-                                    <p><strong> Organizadora Asociada: </strong>   <?= $categorias5['nombre'] ?></p>
+                                    <p><strong> Organizadora Asociada: </strong>   <?= \yii\helpers\Html::encode($categorias5['nombre'] ?? 'Sin asignar') ?></p>
                                     <p><strong>FECHA DE EVENTO: </strong> <?= $dia ?> de  <?= $meses2[$mes * 1] ?>,  <?= $ano ?></p>
                                     <p><strong>SUCURSAL: </strong> <?= $model['sucursal'] ?></p>
                                     <p><strong>TIPO DE EVENTO: </strong> <?= $model['tipo_evento'] ?></p>
