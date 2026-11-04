@@ -7,7 +7,7 @@ use yii\helpers\Url;
 /* @var $reserva app\models\Reservas */
 ?>
 <div class="form-group">
-    <label class="control-label">Presupuesto archivo <small class="text-muted">(opcional: PDF, Word, Excel o imagen)</small></label>
+    <label class="control-label">Presupuesto archivo <small class="text-muted">(opcional: PDF, Word, Excel o imagen, máx. 20 MB)</small></label>
     <input type="file" name="archivo_presupuesto" class="form-control"
            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp">
     <?php if (!$reserva->isNewRecord && $reserva->presupuestofile && is_file(Yii::getAlias('@webroot') . '/imagen/usuarios/' . basename($reserva->presupuestofile))): ?>

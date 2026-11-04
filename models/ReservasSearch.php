@@ -11,6 +11,10 @@ use yii\data\ActiveDataProvider;
  */
 class ReservasSearch extends Reservas
 {
+    /** @var string|null rango de fecha del evento (Y-m-d) */
+    public $fecha_desde;
+    public $fecha_hasta;
+
     /**
      * @inheritdoc
      */
@@ -20,6 +24,7 @@ class ReservasSearch extends Reservas
             [['idreservas'], 'integer'],
             [['idorganizadora'], 'integer'],
             [['tipoevento'], 'safe'],
+            [['fecha_desde', 'fecha_hasta'], 'date', 'format' => 'php:Y-m-d'],
             [['fecha_registro', 'fecha_reserva','paquete_reservar','mensaje','presupuesto', 'servicios_adicionales', 'tipo_bebidas', 'vajillasyvasisenmesa', 'katering', 'nombre_decoradora', 'detalle_decoradora', 'paquete_reservar', 'nombre','email', 'mensaje','presupuesto', 'servicios_adicionales', 'tipo_bebidas', 'vajillasyvasisenmesa', 'katering', 'nombre_decoradora', 'detalle_decoradora', 'sucursal', 'nombre_subcordinadora','otros_detalles', 'email', 'monto_canceladop', 'saldo_pagarp', 'monto_cancelados', 'saldo_pagars', 'tipo_evento', 'hora_inicio', 'cant_garzones', 'color_sillas', 'color_mantel', 'color_servilleta', 'en_mesa', 'nombre_cordinadora', 'nombre_supervisora', 'contrasena', 'detalle_decoracioniglesia' ], 'safe'],
         ];
     }
@@ -67,6 +72,10 @@ class ReservasSearch extends Reservas
             'fecha_reserva' => $this->fecha_reserva,
             'fecha_registro' => $this->fecha_registro,
         ]);
+
+        // Rango de fecha del evento
+        $query->andFilterWhere(['>=', 'fecha_reserva', $this->fecha_desde ?: null])
+            ->andFilterWhere(['<=', 'fecha_reserva', $this->fecha_hasta ?: null]);
 
         $query->andFilterWhere(['like', 'nombre', $this->nombre])
             ->andFilterWhere(['like', 'telefono', $this->telefono])

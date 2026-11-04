@@ -142,6 +142,8 @@ $botonGaleria = function (string $accion, $imagenes) use ($reserva) {
 
         <div class="box-footer">
             <?= Html::submitButton('<i class="fa fa-save"></i> Guardar detalles', ['class' => 'btn btn-success btn-lg']) ?>
+            <?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF (lo guardado)', ['pdf', 'id' => $reserva->idreservas, 'tipo' => 'detalles'],
+                ['class' => 'btn btn-danger btn-lg', 'target' => '_blank']) ?>
             <?= Html::a('<i class="fa fa-arrow-left"></i> Pagos', ['pagos', 'id' => $reserva->idreservas], ['class' => 'btn btn-default btn-lg']) ?>
             <?= Html::a('Ir al listado de reservas', ['reservas/index'], ['class' => 'btn btn-default btn-lg']) ?>
         </div>

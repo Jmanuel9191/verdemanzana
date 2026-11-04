@@ -107,6 +107,8 @@ $fechaHora = function ($v) {
             <?= $boton('fa-users', 'Lista de invitados (' . $invitados . ($limite ? '/' . $limite : '') . ')', ['reservas/invitados', 'idreservas' => $id], 'info') ?>
             <?= $boton('fa-book', 'Guía del cliente', ['reservas/viewguia', 'id' => $id]) ?>
             <?= $boton('fa-key', 'Cambiar contraseña', ['contrasena', 'id' => $id], 'danger') ?>
+            <?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF completo', ['pdf', 'id' => $id, 'tipo' => 'completo'],
+                ['class' => 'btn btn-danger btn-sm', 'target' => '_blank', 'title' => 'Todo junto: presupuesto, estado de cuenta, detalles y cronograma']) ?>
             <?= $boton('fa-list', 'Listado de reservas', ['reservas/index']) ?>
         </div>
     </div>
@@ -146,7 +148,7 @@ $fechaHora = function ($v) {
     <div class="box box-default">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-money"></i> Pagos</h3>
-            <div class="box-tools"><?= $boton('fa-plus', 'Registrar / anular pagos', ['pagos', 'id' => $id]) ?></div>
+            <div class="box-tools"><?= Html::a('<i class="fa fa-file-pdf-o"></i> Estado de cuenta', ['pdf', 'id' => $id, 'tipo' => 'pagos'], ['class' => 'btn btn-danger btn-sm', 'target' => '_blank']) ?> <?= $boton('fa-plus', 'Registrar / anular pagos', ['pagos', 'id' => $id]) ?></div>
         </div>
         <div class="box-body">
             <?php if (empty($pagos)): ?>
@@ -196,7 +198,7 @@ $fechaHora = function ($v) {
     <div class="box box-default">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-list-alt"></i> Detalles del evento</h3>
-            <div class="box-tools"><?= $boton('fa-pencil', 'Editar', ['detalles', 'id' => $id]) ?></div>
+            <div class="box-tools"><?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF', ['pdf', 'id' => $id, 'tipo' => 'detalles'], ['class' => 'btn btn-danger btn-sm', 'target' => '_blank']) ?> <?= $boton('fa-pencil', 'Editar', ['detalles', 'id' => $id]) ?></div>
         </div>
         <div class="box-body">
             <h4 class="subtitulo">Organizadora y personal</h4>
@@ -260,7 +262,7 @@ $fechaHora = function ($v) {
     <div class="box box-default">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-clock-o"></i> <?= Html::encode(ReservaCronograma::titulo($reserva)) ?></h3>
-            <div class="box-tools"><?= $boton('fa-pencil', 'Editar', ['cronograma', 'id' => $id]) ?></div>
+            <div class="box-tools"><?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF', ['pdf', 'id' => $id, 'tipo' => 'cronograma'], ['class' => 'btn btn-danger btn-sm', 'target' => '_blank']) ?> <?= $boton('fa-pencil', 'Editar', ['cronograma', 'id' => $id]) ?></div>
         </div>
         <div class="box-body">
             <?php if (!$cronograma->isNewRecord && $cronograma->tieneContenido()): ?>

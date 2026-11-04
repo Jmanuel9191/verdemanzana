@@ -27,6 +27,8 @@ $pct = function ($v) {
         Presupuesto
         <?= Html::a('<i class="fa fa-pencil"></i> Modificar presupuesto', ['modificar-presupuesto', 'id' => $form->reserva->idreservas],
             ['class' => 'btn btn-warning btn-sm pull-right']) ?>
+        <?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF', ['pdf', 'id' => $form->reserva->idreservas, 'tipo' => 'presupuesto'],
+            ['class' => 'btn btn-danger btn-sm pull-right', 'style' => 'margin-right:6px', 'target' => '_blank', 'title' => 'Abrir PDF (se puede descargar o imprimir)']) ?>
         <?= Html::a('<i class="fa fa-picture-o"></i> Galería <span class="badge">' . count($form->reserva->galeriapresupuesto) . '</span>',
             ['reservas/galeriapresupuesto', 'id' => $form->reserva->idreservas],
             ['class' => 'btn btn-default btn-sm pull-right', 'target' => '_blank', 'style' => 'margin-right:6px',

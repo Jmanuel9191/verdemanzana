@@ -22,7 +22,7 @@ foreach ($historial as $h) {
 <div class="box-body historial-presupuesto">
     <h3 class="titulo-seccion">
         <a data-toggle="collapse" href="#historial-cambios" class="enlace-historial collapsed">
-            Historial de cambios del presupuesto
+            <i class="fa fa-history"></i> Historial de cambios del presupuesto
             <span class="badge"><?= $cantidad ?></span>
             <i class="fa fa-chevron-down flecha"></i>
         </a>
@@ -67,7 +67,7 @@ foreach ($historial as $h) {
                 <li class="evento-creado">
                     <div class="cabecera-evento">
                         <b><?= Html::encode($fechaHora($cotizacion->fecha_registro)) ?></b>
-                        · Cuando se creo el presupuesto 
+                        · Presupuesto creado <small class="text-muted">(antes de que existiera este historial)</small>
                     </div>
                 </li>
             <?php endif; ?>

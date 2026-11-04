@@ -16,6 +16,7 @@ $config = [
                 'yii\web\JqueryAsset' => [
                     'jsOptions' => [ 'position' => \yii\web\View::POS_HEAD ],
                 ],
+                'appendTimestamp' => true,
                 'dosamigos\google\maps\MapAsset' => [
                     'options' => [
                         'key' => 'AIzaSyCZs9s2QxeXnQVsXmkR_KW1tDGb1XHEHO4',

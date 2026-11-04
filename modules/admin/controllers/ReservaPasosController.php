@@ -2,6 +2,7 @@
 
 namespace app\modules\admin\controllers;
 
+use app\components\PdfReserva;
 use app\models\DetallesForm;
 use app\models\Invitados;
 use app\models\PresupuestoForm;
@@ -248,6 +249,21 @@ class ReservaPasosController extends Controller
             'reserva' => $reserva,
             'error'   => $error,
             'valor'   => $error !== null ? $valor : '',
+        ]);
+    }
+
+    /**
+     * PDF de la reserva. tipo: presupuesto | pagos | detalles | cronograma | completo.
+     * Se abre en el navegador (desde ahí se descarga o imprime).
+     */
+    public function actionPdf($id, $tipo = 'completo')
+    {
+        [$reserva] = $this->buscar($id);
+        [$contenido, $nombre] = PdfReserva::generar($reserva, (string)$tipo);
+
+        return Yii::$app->response->sendContentAsFile($contenido, $nombre, [
+            'mimeType' => 'application/pdf',
+            'inline'   => true,
         ]);
     }
 

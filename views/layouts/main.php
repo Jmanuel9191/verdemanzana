@@ -16,7 +16,7 @@ $script = <<<CSS
     
 CSS;
 //$this->registerCss($script, ['depends' => \app\assets\AppAsset::class]);
-\app\assets_b\AppAsset::register($this);
+\app\assets_b\AdminPropioAsset::register($this);   // AdminLTE + estiloadmin.css + adminjs.js
 
 
 ?>

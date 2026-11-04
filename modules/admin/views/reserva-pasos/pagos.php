@@ -68,7 +68,10 @@ $abrirFormulario = $pago->hasErrors();
         <div class="box-body">
 
             <div class="encabezado-pagos">
-                <h3 class="titulo-seccion"> Pagos</h3>
+                <h3 class="titulo-seccion"><i class="fa fa-money"></i> Pagos</h3>
+                <div>
+                <?= Html::a('<i class="fa fa-file-pdf-o"></i> Estado de cuenta', ['pdf', 'id' => $reserva->idreservas, 'tipo' => 'pagos'],
+                    ['class' => 'btn btn-danger', 'target' => '_blank', 'title' => 'Abrir PDF (solo pagos válidos)']) ?>
                 <?php if ($saldoC > 0): ?>
                     <button type="button" class="btn btn-success" id="btn-nuevo-pago">
                         <i class="fa fa-plus"></i> Registrar pago
@@ -76,6 +79,7 @@ $abrirFormulario = $pago->hasErrors();
                 <?php else: ?>
                     <span class="label label-success etiqueta-pagado"><i class="fa fa-check"></i> Pagado por completo</span>
                 <?php endif; ?>
+                </div>
             </div>
 
             <!-- ===================== FORMULARIO DE PAGO NUEVO ===================== -->
@@ -147,7 +151,7 @@ $abrirFormulario = $pago->hasErrors();
                             <th>N.º</th>
                             <th>Fecha de pago</th>
                             <th class="text-right">Monto</th>
-                            <th>Tipo Pago</th>
+                            <th>Forma</th>
                             <th>Comprobante</th>
                             <th>Observación</th>
                             <th>Registrado</th>

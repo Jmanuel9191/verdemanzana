@@ -50,9 +50,14 @@ $guardado = !$cronograma->isNewRecord;
 
     <div class="box box-success caja-paso">
         <div class="box-body">
-            <h3 class="titulo-seccion"> <?= Html::encode($titulo) ?></h3>
+            <h3 class="titulo-seccion"><i class="fa fa-clock-o"></i> <?= Html::encode($titulo) ?></h3>
 
-          
+            <div class="ayuda-cronograma">
+                <i class="fa fa-lightbulb-o"></i>
+                Armá el cronograma en Word, seleccioná todo (<kbd>Ctrl</kbd>+<kbd>A</kbd>), copiá (<kbd>Ctrl</kbd>+<kbd>C</kbd>)
+                y pegalo acá (<kbd>Ctrl</kbd>+<kbd>V</kbd>). Se mantienen tablas, colores, negritas, tamaños y alineación.
+                <b>Las imágenes pegadas no se copian.</b>
+            </div>
 
             <?= $af->field($cronograma, 'contenido')->widget(CKEditor::class, ReservaCronograma::opcionesEditor())->label(false) ?>
 
@@ -76,7 +81,13 @@ $guardado = !$cronograma->isNewRecord;
     <!-- ===================== VISTA PREVIA (lo guardado) ===================== -->
     <div class="box box-default" id="vista-previa">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-eye"></i> Vista previa  </h3>
+            <h3 class="box-title"><i class="fa fa-eye"></i> Vista previa — así se ve guardado (y así lo verá el cliente)</h3>
+            <?php if ($guardado && $cronograma->tieneContenido()): ?>
+                <div class="box-tools">
+                    <?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF', ['pdf', 'id' => $reserva->idreservas, 'tipo' => 'cronograma'],
+                        ['class' => 'btn btn-danger btn-sm', 'target' => '_blank']) ?>
+                </div>
+            <?php endif; ?>
         </div>
         <div class="box-body">
             <?php if ($guardado && $cronograma->tieneContenido()): ?>
