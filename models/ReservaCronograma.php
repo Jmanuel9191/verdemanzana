@@ -191,16 +191,6 @@ class ReservaCronograma extends ActiveRecord
         ];
     }
 
-    /** CSS mínimo para mostrar el cronograma (admin, cliente, PDF). */
-    public static function cssVista(string $selector = '.cronograma-vista'): string
-    {
-        return <<<CSS
-{$selector} { background:#fff; color:#000; padding:20px; border:1px solid #ddd; overflow-x:auto; font-family:Calibri, Arial, sans-serif; font-size:14px; line-height:1.35; }
-{$selector} table { border-collapse:collapse; max-width:100%; }
-{$selector} td, {$selector} th { vertical-align:top; }
-{$selector} p { margin:0 0 6px; }
-CSS;
-    }
 
     private static function idAdminActual(): ?int
     {

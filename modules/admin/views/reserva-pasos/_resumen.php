@@ -17,12 +17,10 @@ $saldo = \app\models\ReservaCotizacionDetalle::deCentavos(
 ?>
 <div class="resumen-reserva" id="resumen-reserva" data-pagado="<?= Html::encode($pagado) ?>">
     <div class="resumen-bloque">
-        <i class="fa fa-cube"></i>
         <span id="res-paquete"><?= Html::encode($paquete ?: 'Sin paquete') ?></span>
         <small id="res-invitados"><?= $invitados !== '' ? Html::encode($invitados) . ' invitados' : '' ?></small>
     </div>
     <div class="resumen-bloque">
-        <i class="fa fa-calendar"></i>
         <span id="res-fecha"><?= $fecha ? Html::encode(date('d/m/Y', strtotime($fecha))) : 'Sin fecha' ?></span>
         <small id="res-sucursal"><?= Html::encode($sucursal ?: '') ?></small>
     </div>

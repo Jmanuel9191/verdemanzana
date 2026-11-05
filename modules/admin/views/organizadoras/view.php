@@ -1,8 +1,6 @@
 <?php
-use kartik\widgets\FileInput;
 use yii\helpers\Html;
 use yii\widgets\DetailView;
-use yii\helpers\Url;
 /* @var $this yii\web\View */
 /* @var $model app\models\Usuarios */
 $dias = date("Y").'-'.date("m").'-'.date("d");
@@ -12,33 +10,6 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 
 
-<style>
-    .btn-secondary {
-        color: #fff!important;
-        background-color: #6c757d;
-        border-color: #6c757d; padding: 10px;
-    }
-
-    .btn-primary {
-        color: #fff!important;
-        background-color: #007bff;
-        border-color: #007bff; padding: 10px;
-    }
-    .btn-info {
-        color: #fff!important;
-        background-color: #17a2b8;
-        border-color: #17a2b8;  padding: 10px;
-    }
-    .btn-danger {
-        background-color: #dd4b39;
-        border-color: #d73925; padding: 10px;
-    }
-    .btn-dark {
-        color: #fff!important;
-        background-color: #343a40;
-        border-color: #343a40; padding: 10px;
-    }
-</style>
 
 
 

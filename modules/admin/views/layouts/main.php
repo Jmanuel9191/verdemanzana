@@ -5,7 +5,13 @@
 
 use yii\helpers\Html;
 
-\app\assets_b\AssetAdmin::register($this);
+// AdminLTE + adminstyle.css + estiloadmin.css + adminjs.js (ver assets_b/AdminPropioAsset.php)
+\app\assets_b\AdminPropioAsset::register($this);
+
+// Clase de la página en el <body> (ej. "pagina-reservas pagina-reservas-view"):
+// estiloadmin.css la usa para que los estilos de una pantalla no afecten a otras.
+$controlador = Yii::$app->controller;
+$clasePagina = $controlador ? 'pagina-' . $controlador->id . ' pagina-' . $controlador->id . '-' . $controlador->action->id : '';
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -16,9 +22,8 @@ use yii\helpers\Html;
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
-    <link href="https://www.verdemanzana.com.bo/assets_b/css/adminstyle.css" rel="stylesheet">
 </head>
-<body class="hold-transition skin-red sidebar-mini">
+<body class="hold-transition skin-red sidebar-mini <?= Html::encode($clasePagina) ?>">
 <?php $this->beginBody() ?>
 
 <div class="wrapper">
@@ -134,15 +139,6 @@ use yii\helpers\Html;
             <?php  elseif (Yii::$app->user->identity->tipo_admin == '2'):  ?>
 
 
-                <style>
-                    .sidebar-nav li {
-
-                    }
-                    .sidebar-nav li {
-                        list-style: none;
-                        line-height: 40px;
-                    }
-                </style>
                 <?=
                 \dmstr\widgets\Menu::widget([
                     "items" => [

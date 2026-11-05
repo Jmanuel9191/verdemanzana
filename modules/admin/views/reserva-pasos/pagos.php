@@ -68,9 +68,9 @@ $abrirFormulario = $pago->hasErrors();
         <div class="box-body">
 
             <div class="encabezado-pagos">
-                <h3 class="titulo-seccion"><i class="fa fa-money"></i> Pagos</h3>
+                <h3 class="titulo-seccion"> Pagos</h3>
                 <div>
-                <?= Html::a('<i class="fa fa-file-pdf-o"></i> Estado de cuenta', ['pdf', 'id' => $reserva->idreservas, 'tipo' => 'pagos'],
+                <?= Html::a(' Estado de cuenta', ['pdf', 'id' => $reserva->idreservas, 'tipo' => 'pagos'],
                     ['class' => 'btn btn-danger', 'target' => '_blank', 'title' => 'Abrir PDF (solo pagos válidos)']) ?>
                 <?php if ($saldoC > 0): ?>
                     <button type="button" class="btn btn-success" id="btn-nuevo-pago">
@@ -108,7 +108,7 @@ $abrirFormulario = $pago->hasErrors();
                                 // el monto se normaliza en el servidor ("1.500,50" → 1500.50); en el navegador no se valida
                                 'enableClientValidation' => false,
                                 'template' => "{label}\n<div class=\"input-group\"><span class=\"input-group-addon\">Bs</span>{input}"
-                                    . "<span class=\"input-group-btn\"><button type=\"button\" class=\"btn btn-default\" id=\"btn-saldo\" title=\"Poner el saldo completo\">Saldo</button></span></div>\n{hint}\n{error}",
+                                    . "<span class=\"input-group-btn\"><button type=\"button\" class=\"btn btn-default\" id=\"btn-saldo\" data-saldo=\"" . number_format((float)$saldo, 2, ',', '.') . "\" title=\"Poner el saldo completo\">Saldo</button></span></div>\n{hint}\n{error}",
                             ])->textInput([
                                 'inputmode' => 'decimal',
                                 'autocomplete' => 'off',
@@ -269,73 +269,3 @@ $abrirFormulario = $pago->hasErrors();
     </div>
 </div>
 
-<?php
-$this->registerCss(<<<CSS
-.reserva-pasos .titulo-seccion { color:#527f1a; font-size:20px; font-weight:600; margin:5px 0 15px; border-bottom:1px solid #e3e3e3; padding-bottom:8px; }
-.pasos-reserva { margin-bottom:0; }
-.pasos-reserva > li > a { font-weight:600; }
-.pasos-reserva .paso-numero { display:inline-block; width:22px; height:22px; line-height:22px; border-radius:50%; background:#527f1a; color:#fff; text-align:center; font-size:12px; margin-right:4px; }
-.pasos-reserva > li.disabled .paso-numero { background:#bbb; }
-.caja-paso { border-top-left-radius:0; }
-.resumen-reserva { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:10px 30px; align-items:center; background:#2f4a10; color:#fff; padding:10px 15px; margin-bottom:15px; border-radius:3px; box-shadow:0 2px 6px rgba(0,0,0,.2); }
-.resumen-reserva .resumen-bloque { display:flex; gap:8px; align-items:center; }
-.resumen-reserva small { opacity:.8; }
-.resumen-reserva .resumen-montos { margin-left:auto; gap:20px; }
-.resumen-reserva .resumen-montos div { display:flex; flex-direction:column; text-align:right; }
-.resumen-reserva .resumen-montos b { font-size:16px; }
-.resumen-reserva .res-saldo b { color:#ffd54f; }
-.encabezado-pagos { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e3e3e3; margin-bottom:15px; }
-.encabezado-pagos .titulo-seccion { border-bottom:0; margin-bottom:8px; }
-.etiqueta-pagado { font-size:13px; padding:6px 10px; }
-.panel-nuevo-pago { background:#fafcf7; border:1px dashed #c5d9a8; padding:15px 15px 0; border-radius:3px; margin-bottom:20px; }
-.botones-pago { padding-top:25px; }
-.botones-pago .btn { margin-bottom:8px; }
-.tabla-pagos th { background:#f4f8ee; white-space:nowrap; }
-.tabla-pagos td { vertical-align:middle !important; }
-.tabla-pagos .col-observacion { max-width:260px; font-size:12px; }
-.tabla-pagos .col-registro { white-space:nowrap; font-size:12px; }
-.tabla-pagos tr.pago-anulado td { color:#999; background:#fbfbfb; }
-.tabla-pagos tr.pago-anulado td.tachable { text-decoration:line-through; }
-.tabla-pagos tr.fila-motivo td { border-top:0; background:#fdf3f2; color:#a94442; font-size:12px; }
-.sin-pagos { padding:15px 0; }
-.tabla-totales th { text-align:right; }
-.tabla-totales td { text-align:right; width:45%; font-size:15px; }
-.tabla-totales .fila-total th, .tabla-totales .fila-total td { font-size:20px; color:#527f1a; border-top:2px solid #527f1a; }
-CSS);
-
-$idMonto = Html::getInputId($pago, 'monto');
-$saldoTexto = number_format((float)$saldo, 2, ',', '.');
-$this->registerJs(<<<JS
-(function () {
-    var panel = $('#panel-nuevo-pago');
-    $('#btn-nuevo-pago').on('click', function () {
-        panel.slideDown(150, function () { $('#{$idMonto}').focus(); });
-    });
-    $('#btn-cancelar-pago').on('click', function () { panel.slideUp(150); });
-    $('#btn-saldo').on('click', function () { $('#{$idMonto}').val('{$saldoTexto}').trigger('change'); });
-
-    // Evita doble clic (dos pagos iguales)
-    $('#form-pago').on('beforeSubmit', function () {
-        $('#btn-guardar-pago').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando…');
-        return true;
-    });
-
-    // Modal de anulación
-    $('.btn-anular').on('click', function () {
-        $('#anular-idpago').val($(this).data('idpago'));
-        $('#anular-detalle').text($(this).data('detalle'));
-        $('#anular-motivo').val('');
-        $('#modal-anular').modal('show');
-    });
-    $('#modal-anular').on('shown.bs.modal', function () { $('#anular-motivo').focus(); });
-    $('#form-anular').on('submit', function () {
-        if ($.trim($('#anular-motivo').val()).length < 5) {
-            alert('Escribí el motivo de la anulación (mínimo 5 caracteres).');
-            return false;
-        }
-        $('#btn-confirmar-anular').prop('disabled', true);
-        return true;
-    });
-})();
-JS);
-?>

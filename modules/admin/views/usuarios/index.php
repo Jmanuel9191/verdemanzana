@@ -63,7 +63,9 @@ $this->params['breadcrumbs'][] = $this->title;
                     },
                     'delete' => function ($url, $model, $key) {
                         return Html::a('<i class="fa fa-trash"></i>', $url, ['class' => 'btn btn-danger', 'data' => [
-                            'confirm' => 'Esta seguro?.'
+                            'confirm' => 'Esta seguro?.',
+                                                    'method' => 'post',
+                                                    'pjax' => '0',
                         ], "title" => "Eliminar"]);
                     },
                 ],
@@ -79,14 +81,4 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 </section>
 <?php
-$script = <<<JS
-    function action(url)
-    {
-    $.get(url, function(data) {
-      $.pjax.reload({container:"#table"});
-    });
-    }
-
-JS;
-$this->registerJs($script, \yii\web\View::POS_HEAD);
 

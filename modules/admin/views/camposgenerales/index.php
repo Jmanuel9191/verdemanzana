@@ -12,15 +12,8 @@ use kartik\widgets\Select2;
 $this->title = 'Textos del Formulario';
 $this->params['breadcrumbs'][] = $this->title;
 
-$format = <<< SCRIPT
-function format(state) {
-    if (!state.id) return state.text;
-    return state.text;
-}
-SCRIPT;
 
 $escape = new \yii\web\JsExpression("function(m) { return m; }");
-$this->registerJs($format, \yii\web\View::POS_HEAD);
 ?>
 
     <section class="content-header">
@@ -109,13 +102,3 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
 
 
 <?php
-$script = <<<JS
-    function action(url)
-    {
-    $.get(url, function(data) {
-      $.pjax.reload({container:"#table"});
-    });
-    }
-
-JS;
-$this->registerJs($script, \yii\web\View::POS_HEAD);

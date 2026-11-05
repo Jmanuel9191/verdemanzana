@@ -24,7 +24,7 @@ use yii\helpers\Html;
         'placeholder' => 'Ej. Silla Tiffany adicional / DJ show 4 horas',
     ]) ?>
 
-    <div id="campos-proveedor">
+    <div id="campos-proveedor" data-campo="<?= Html::getInputId($model, 'tipo') ?>">
         <?= $form->field($model, 'empresa')->textInput([
             'maxlength' => true,
             'placeholder' => 'Ej. Titos Bar',
@@ -70,16 +70,3 @@ use yii\helpers\Html;
 
 </div>
 <?php
-$idCampo = Html::getInputId($model, 'tipo');
-$js = <<<JS
-(function () {
-    var campo = $('#$idCampo');
-    var bloque = $('#campos-proveedor');
-    function actualizar() {
-        bloque.toggle(campo.val() === 'proveedor');
-    }
-    campo.on('change', actualizar);
-    actualizar();
-})();
-JS;
-$this->registerJs($js);

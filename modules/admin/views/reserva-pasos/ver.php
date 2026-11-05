@@ -99,15 +99,15 @@ $fechaHora = function ($v) {
     <!-- ===================== ACCESOS ===================== -->
     <div class="box box-success">
         <div class="box-body accesos">
-            <?= $boton('fa-pencil', 'Datos y presupuesto', ['presupuesto', 'id' => $id], 'success') ?>
-            <?= $boton('fa-calculator', 'Modificar presupuesto', ['modificar-presupuesto', 'id' => $id], 'warning') ?>
-            <?= $boton('fa-money', 'Pagos', ['pagos', 'id' => $id], 'primary') ?>
-            <?= $boton('fa-list-alt', 'Detalles', ['detalles', 'id' => $id], 'success') ?>
-            <?= $boton('fa-clock-o', 'Cronograma', ['cronograma', 'id' => $id], 'success') ?>
-            <?= $boton('fa-users', 'Lista de invitados (' . $invitados . ($limite ? '/' . $limite : '') . ')', ['reservas/invitados', 'idreservas' => $id], 'info') ?>
-            <?= $boton('fa-book', 'Guía del cliente', ['reservas/viewguia', 'id' => $id]) ?>
-            <?= $boton('fa-key', 'Cambiar contraseña', ['contrasena', 'id' => $id], 'danger') ?>
-            <?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF completo', ['pdf', 'id' => $id, 'tipo' => 'completo'],
+            <?= $boton('', 'Datos y presupuesto', ['presupuesto', 'id' => $id], 'success') ?>
+            <?= $boton('', 'Modificar presupuesto', ['modificar-presupuesto', 'id' => $id], 'warning') ?>
+            <?= $boton('', 'Pagos', ['pagos', 'id' => $id], 'primary') ?>
+            <?= $boton('', 'Detalles', ['detalles', 'id' => $id], 'success') ?>
+            <?= $boton('', 'Cronograma', ['cronograma', 'id' => $id], 'success') ?>
+            <?= $boton('', 'Lista de invitados (' . $invitados . ($limite ? '/' . $limite : '') . ')', ['reservas/invitados', 'idreservas' => $id], 'info') ?>
+            <?= $boton('', 'Guía del cliente', ['reservas/viewguia', 'id' => $id]) ?>
+            <?= $boton('', 'Cambiar contraseña', ['contrasena', 'id' => $id], 'danger') ?>
+            <?= Html::a(' PDF completo', ['pdf', 'id' => $id, 'tipo' => 'completo'],
                 ['class' => 'btn btn-danger btn-sm', 'target' => '_blank', 'title' => 'Todo junto: presupuesto, estado de cuenta, detalles y cronograma']) ?>
             <?= $boton('fa-list', 'Listado de reservas', ['reservas/index']) ?>
         </div>
@@ -116,7 +116,7 @@ $fechaHora = function ($v) {
     <!-- ===================== 1. CLIENTE Y EVENTO ===================== -->
     <div class="box box-default">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-user"></i> Cliente y evento</h3>
+            <h3 class="box-title"> Cliente y evento</h3>
             <div class="box-tools"><?= $boton('fa-pencil', 'Editar', ['presupuesto', 'id' => $id]) ?></div>
         </div>
         <div class="box-body">
@@ -147,7 +147,7 @@ $fechaHora = function ($v) {
     <!-- ===================== 3. PAGOS ===================== -->
     <div class="box box-default">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-money"></i> Pagos</h3>
+            <h3 class="box-title"> Pagos</h3>
             <div class="box-tools"><?= Html::a('<i class="fa fa-file-pdf-o"></i> Estado de cuenta', ['pdf', 'id' => $id, 'tipo' => 'pagos'], ['class' => 'btn btn-danger btn-sm', 'target' => '_blank']) ?> <?= $boton('fa-plus', 'Registrar / anular pagos', ['pagos', 'id' => $id]) ?></div>
         </div>
         <div class="box-body">
@@ -197,7 +197,7 @@ $fechaHora = function ($v) {
     <!-- ===================== 4. DETALLES ===================== -->
     <div class="box box-default">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-list-alt"></i> Detalles del evento</h3>
+            <h3 class="box-title"> Detalles del evento</h3>
             <div class="box-tools"><?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF', ['pdf', 'id' => $id, 'tipo' => 'detalles'], ['class' => 'btn btn-danger btn-sm', 'target' => '_blank']) ?> <?= $boton('fa-pencil', 'Editar', ['detalles', 'id' => $id]) ?></div>
         </div>
         <div class="box-body">
@@ -244,7 +244,7 @@ $fechaHora = function ($v) {
     <!-- ===================== GALERÍAS DEL ADMIN (debajo de Detalles) ===================== -->
     <div class="box box-default">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-picture-o"></i> Galerías (admin)</h3>
+            <h3 class="box-title"> Galerías (admin)</h3>
         </div>
         <div class="box-body accesos">
             <?php foreach ([
@@ -261,7 +261,7 @@ $fechaHora = function ($v) {
     <!-- ===================== 5. CRONOGRAMA ===================== -->
     <div class="box box-default">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-clock-o"></i> <?= Html::encode(ReservaCronograma::titulo($reserva)) ?></h3>
+            <h3 class="box-title"> <?= Html::encode(ReservaCronograma::titulo($reserva)) ?></h3>
             <div class="box-tools"><?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF', ['pdf', 'id' => $id, 'tipo' => 'cronograma'], ['class' => 'btn btn-danger btn-sm', 'target' => '_blank']) ?> <?= $boton('fa-pencil', 'Editar', ['cronograma', 'id' => $id]) ?></div>
         </div>
         <div class="box-body">
@@ -279,7 +279,7 @@ $fechaHora = function ($v) {
     <!-- ===================== 6. LO QUE CARGA EL CLIENTE ===================== -->
     <div class="box box-default">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-commenting"></i> Lo que cargó el cliente</h3>
+            <h3 class="box-title"> Lo que cargó el cliente</h3>
         </div>
         <div class="box-body">
             <div class="row datos">
@@ -298,45 +298,3 @@ $fechaHora = function ($v) {
 
 </section>
 
-<?php
-$this->registerCss(<<<CSS
-.reserva-pasos .titulo-seccion { color:#527f1a; font-size:20px; font-weight:600; margin:5px 0 15px; border-bottom:1px solid #e3e3e3; padding-bottom:8px; }
-.resumen-reserva { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:10px 30px; align-items:center; background:#2f4a10; color:#fff; padding:10px 15px; margin-bottom:15px; border-radius:3px; box-shadow:0 2px 6px rgba(0,0,0,.2); }
-.resumen-reserva .resumen-bloque { display:flex; gap:8px; align-items:center; }
-.resumen-reserva small { opacity:.8; }
-.resumen-reserva .resumen-montos { margin-left:auto; gap:20px; }
-.resumen-reserva .resumen-montos div { display:flex; flex-direction:column; text-align:right; }
-.resumen-reserva .resumen-montos b { font-size:16px; }
-.resumen-reserva .res-saldo b { color:#ffd54f; }
-.ficha-reserva .accesos { display:flex; flex-wrap:wrap; gap:6px; }
-.ficha-reserva .box-title { color:#527f1a; font-weight:600; }
-.ficha-reserva .subtitulo { color:#527f1a; font-size:15px; font-weight:600; margin:18px 0 8px; border-bottom:1px dashed #dde8cf; padding-bottom:4px; }
-.ficha-reserva .datos > div { margin-bottom:12px; }
-.ficha-reserva .datos small { display:block; color:#888; font-size:11px; text-transform:uppercase; letter-spacing:.3px; }
-.ficha-reserva .datos .html { background:#fafafa; border:1px solid #eee; border-radius:3px; padding:6px 10px; min-height:34px; }
-.ficha-reserva .datos .html p { margin:0 0 4px; }
-.tabla-lineas th { background:#f4f8ee; white-space:nowrap; }
-.tabla-lectura td { vertical-align:middle !important; }
-.tabla-lectura .fila-paquete-lectura td { background:#fafcf7; }
-.observaciones-lectura { background:#fafafa; border:1px solid #eee; padding:8px 12px; border-radius:3px; }
-.tabla-totales th { text-align:right; }
-.tabla-totales td { text-align:right; width:45%; font-size:15px; }
-.tabla-totales .fila-total th, .tabla-totales .fila-total td { font-size:18px; color:#527f1a; border-top:2px solid #527f1a; }
-.tabla-pagos th { background:#f4f8ee; }
-.tabla-pagos tr.pago-anulado td { color:#999; background:#fbfbfb; }
-.tabla-pagos tr.pago-anulado td.tachable { text-decoration:line-through; }
-.historial-presupuesto .enlace-historial { color:#527f1a; text-decoration:none; display:block; }
-.historial-presupuesto .enlace-historial .badge { background:#527f1a; vertical-align:middle; }
-.historial-presupuesto .flecha { float:right; font-size:14px; margin-top:6px; transition:transform .2s; }
-.historial-presupuesto .enlace-historial:not(.collapsed) .flecha { transform:rotate(180deg); }
-.lista-historial { list-style:none; padding:0; margin:0; }
-.lista-historial > li { border-left:3px solid #f0ad4e; background:#fffdf7; padding:8px 12px; margin-bottom:10px; border-radius:0 3px 3px 0; }
-.lista-historial > li.evento-creado { border-left-color:#527f1a; background:#fafcf7; }
-.lista-historial .cabecera-evento { font-size:13px; }
-.lista-historial .motivo-evento { font-size:12px; color:#8a6d3b; margin-top:3px; }
-.lista-historial .cambios-evento { margin:6px 0 0; padding-left:18px; font-size:13px; }
-.miniaturas { display:flex; flex-wrap:wrap; gap:8px; }
-.miniaturas .miniatura img { width:110px; height:110px; object-fit:cover; border:1px solid #ddd; border-radius:3px; }
-CSS);
-$this->registerCss(ReservaCronograma::cssVista());
-?>

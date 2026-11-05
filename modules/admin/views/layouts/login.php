@@ -5,7 +5,7 @@
 
 use yii\helpers\Html;
 
-\app\assets_b\AssetAdmin::register($this);
+\app\assets_b\AdminLoginAsset::register($this);   // AdminLTE + adminjs.js (sin estilos propios)
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -22,15 +22,6 @@ use yii\helpers\Html;
 <?= $content ?>
 
 <?php $this->endBody() ?>
-<script>
-    $(function () {
-        $('input').iCheck({
-            checkboxClass: 'icheckbox_square-blue',
-            radioClass: 'iradio_square-blue',
-            increaseArea: '20%' // optional
-        });
-    });
-</script>
 </body>
 </html>
 <?php $this->endPage() ?>

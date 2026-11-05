@@ -14,14 +14,7 @@ $this->title = 'Productos';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <?php
-$format = <<< SCRIPT
-function format(state) {
-if (!state.id) return state.text; // optgroup
-return state.text;
-}
-SCRIPT;
 $escape = new \yii\web\JsExpression("function(m) { return m; }");
-$this->registerJs($format, \yii\web\View::POS_HEAD);
 ?>
     <section class="content-header">
 
@@ -132,7 +125,9 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
                                             'delete' => function ($url, $model, $key) {
 
                                                 return Html::a('<i class="fa fa-trash"></i>', $url, ['class' => 'btn btn-danger', 'data' => [
-                                                    'confirm' => 'Esta seguro?.'
+                                                    'confirm' => 'Esta seguro?.',
+                                                    'method' => 'post',
+                                                    'pjax' => '0',
                                                 ], "title" => "Eliminar"]);
                                             },
                                         ],
@@ -148,13 +143,3 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
         </div>
     </section>
 <?php
-$script = <<<JS
-    function action(url)
-    {
-    $.get(url, function(data) {
-      $.pjax.reload({container:"#table"});
-    });
-    }
-
-JS;
-$this->registerJs($script, \yii\web\View::POS_HEAD);

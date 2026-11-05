@@ -35,15 +35,3 @@ $min = \app\models\PresupuestoForm::CONTRASENA_MIN;
         <p class="help-block">Con el ojito podés ver lo que escribís. Se guarda cifrada: después no se puede ver, solo cambiar.</p>
     <?php endif; ?>
 </div>
-<?php
-$this->registerJs(<<<JS
-$(document).off('click.verContrasena').on('click.verContrasena', '.btn-ver-contrasena', function () {
-    var campo = $('#' + $(this).data('objetivo'));
-    var mostrar = campo.attr('type') === 'password';
-    campo.attr('type', mostrar ? 'text' : 'password');
-    $(this).find('i').toggleClass('fa-eye', !mostrar).toggleClass('fa-eye-slash', mostrar);
-    $(this).attr('title', mostrar ? 'Ocultar' : 'Mostrar');
-    campo.focus();
-});
-JS, \yii\web\View::POS_READY, 'ver-contrasena');
-?>

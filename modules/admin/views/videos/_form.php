@@ -1,12 +1,9 @@
 <?php
 
-use kartik\widgets\DepDrop;
 
 
-use dosamigos\ckeditor\CKEditor;
 use kartik\form\ActiveForm;
 use kartik\select2\Select2;
-use kartik\widgets\DatePicker;
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */
@@ -14,14 +11,7 @@ use yii\helpers\Html;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 <?php
-$format = <<< SCRIPT
-function format(state) {
-if (!state.id) return state.text; // optgroup
-return state.text;
-}
-SCRIPT;
 $escape = new \yii\web\JsExpression("function(m) { return m; }");
-$this->registerJs($format, \yii\web\View::POS_HEAD);
 ?>
 
 

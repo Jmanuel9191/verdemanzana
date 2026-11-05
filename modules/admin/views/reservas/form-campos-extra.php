@@ -2,7 +2,6 @@
 
 use yii\helpers\Html;
 use app\models\FormLayoutOrden;
-use app\models\FormCamposExtra;
 
 // Obtener cronograma asociado a la reserva
 $cronograma = \app\models\CronogramaBoda::findOne(['idreserva' => $reserva->idreservas]);
@@ -264,15 +263,3 @@ $ordenes = FormLayoutOrden::find()
     </div>
 </div>
 
-<style>
-    .grupo-bloque {
-        margin-bottom: 40px;
-        padding: 20px;
-        background: #fdfdfd;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-    }
-    .form-control[readonly] {
-        width: auto !important;
-    }
-</style>

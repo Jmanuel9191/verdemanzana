@@ -13,14 +13,7 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 
 <?php
-$format = <<< SCRIPT
-function format(state) {
-if (!state.id) return state.text; // optgroup
-return state.text;
-}
-SCRIPT;
 $escape = new \yii\web\JsExpression("function(m) { return m; }");
-$this->registerJs($format, \yii\web\View::POS_HEAD);
 ?>
 
 
@@ -170,13 +163,13 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
                         if ($esNueva) {
                             $items[] = $item('fa-eye', 'Ver reserva', ['reserva-pasos/ver', 'id' => $id]);
                             $items[] = '<li class="divider"></li>';
-                            $items[] = $item('fa-calculator', 'Presupuesto', ['reserva-pasos/presupuesto', 'id' => $id]);
-                            $items[] = $item('fa-money', 'Pagos', ['reserva-pasos/pagos', 'id' => $id]);
-                            $items[] = $item('fa-list-alt', 'Detalles', ['reserva-pasos/detalles', 'id' => $id]);
-                            $items[] = $item('fa-clock-o', 'Cronograma', ['reserva-pasos/cronograma', 'id' => $id]);
-                            $items[] = $item('fa-users', 'Lista de invitados', ['reservas/invitados', 'idreservas' => $id]);
-                            $items[] = $item('fa-key', 'Cambiar contraseña', ['reserva-pasos/contrasena', 'id' => $id]);
-                            $items[] = $item('fa-file-pdf-o', 'PDF completo', ['reserva-pasos/pdf', 'id' => $id, 'tipo' => 'completo'], ['target' => '_blank']);
+                            $items[] = $item('', 'Presupuesto', ['reserva-pasos/presupuesto', 'id' => $id]);
+                            $items[] = $item('', 'Pagos', ['reserva-pasos/pagos', 'id' => $id]);
+                            $items[] = $item('', 'Detalles', ['reserva-pasos/detalles', 'id' => $id]);
+                            $items[] = $item('', 'Cronograma', ['reserva-pasos/cronograma', 'id' => $id]);
+                            $items[] = $item('', 'Lista de invitados', ['reservas/invitados', 'idreservas' => $id]);
+                            $items[] = $item('', 'Cambiar contraseña', ['reserva-pasos/contrasena', 'id' => $id]);
+                            $items[] = $item('', 'PDF completo', ['reserva-pasos/pdf', 'id' => $id, 'tipo' => 'completo'], ['target' => '_blank']);
                         } else {
                             // Reservas viejas (formulario anterior)
                             $items[] = $item('fa-eye', 'Ver', ['reservas/view', 'id' => $id]);
@@ -234,50 +227,9 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
 </section>
 
 
-    <style>
-        .btn-success2 > i {
-            color: white!important;
-
-        }
-        .btn-success2 {
-            background-color: #d24318;
-            border-color: #d24318;
-        }
-
-        .btn-success3 > i {
-            color: white!important;
-
-        }
-        .btn-success3 {
-            background-color: #395398;
-            border-color: #395398;
-        }
-
-        .btn.btn-info.guiased
-        {
-            background: #00a65a;
-            border-color: #00a65a;
-        }
-    </style>
 
 
 
 
 <?php
 // Activar / desactivar: POST con token de seguridad (antes era GET)
-$script = <<<JS
-    function cambiarEstado(url)
-    {
-        $.post(url, {_csrf: yii.getCsrfToken()})
-            .done(function () { $.pjax.reload({container: "#table", timeout: 5000}); })
-            .fail(function (xhr) {
-                alert(xhr.responseJSON && xhr.responseJSON.mensaje ? xhr.responseJSON.mensaje : 'No se pudo cambiar el estado.');
-            });
-    }
-JS;
-$this->registerJs($script, \yii\web\View::POS_HEAD);
-// El listado filtra sin recargar la página (Pjax): al hacer clic se toman los filtros que haya en ese momento
-$this->registerJs("$('#btn-excel-reservas').on('click', function () { this.href = this.href.split('?')[0] + window.location.search; });");
-// Menú "Opciones": que no lo corte la tabla con scroll
-$this->registerCss('.operaciones-reserva { display:flex; gap:4px; align-items:center; } .operaciones-reserva .dropdown-menu > li > a { padding:5px 15px; } @media (min-width:768px) { #table .table-responsive { overflow:visible; } }');
-$this->registerCss('.filtro-fechas label { display:block; font-size:10px; font-weight:normal; color:#888; margin:0; text-transform:uppercase; } .filtro-fechas input { margin-bottom:3px; padding:2px 4px; font-size:12px; height:26px; }');

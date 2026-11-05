@@ -1,0 +1,652 @@
+/* ==========================================================================
+   Verde Manzana · estilos propios del panel de administración
+   Se carga en todas las páginas del admin (assets_b/AdminPropioAsset.php),
+   después de AdminLTE.
+
+   Cómo está organizado:
+   - El <body> del admin lleva la clase de la página actual, por ejemplo
+     "pagina-reservas-view" (controlador + acción) y "pagina-reservas" (controlador).
+   - Los estilos que antes estaban escritos dentro de UNA vista quedan acotados
+     a esa página con :where(.pagina-...). :where() no suma fuerza (especificidad),
+     así cada regla se comporta exactamente igual que cuando estaba en la vista
+     y no afecta al resto de las pantallas.
+   ========================================================================== */
+
+
+/* ---------- GENERAL (todas las páginas del admin) ---------- */
+.sidebar-nav li {
+    list-style: none;
+    line-height: 40px;
+}
+.btn-success2 > i {
+    color: white!important;
+}
+.btn-success2 {
+    background-color: #d24318;
+    border-color: #d24318;
+}
+.btn-success3 > i {
+    color: white!important;
+}
+.btn-success3 {
+    background-color: #395398;
+    border-color: #395398;
+}
+.btn.btn-info.guiased {
+    background: #00a65a;
+    border-color: #00a65a;
+}
+
+/* ---------- RESERVAS · listado ---------- */
+:where(.pagina-reservas-index) .operaciones-reserva {
+    display:flex;
+    gap:4px;
+    align-items:center;
+}
+:where(.pagina-reservas-index) .operaciones-reserva .dropdown-menu > li > a {
+    padding:5px 15px;
+}
+:where(.pagina-reservas-index) .filtro-fechas label {
+    display:block;
+    font-size:10px;
+    font-weight:normal;
+    color:#888;
+    margin:0;
+    text-transform:uppercase;
+}
+:where(.pagina-reservas-index) .filtro-fechas input {
+    margin-bottom:3px;
+    padding:2px 4px;
+    font-size:12px;
+    height:26px;
+}
+@media (min-width:768px) {
+    :where(.pagina-reservas-index) #table .table-responsive {
+        overflow:visible;
+    }
+}
+
+/* ---------- FICHAS VIEJAS (administrador, organizadoras, reservas: ver / ver cronograma / ver guía) · botones ---------- */
+:where(.pagina-administrador-view, .pagina-organizadoras-view, .pagina-reservas-view, .pagina-reservas-viewcronograma, .pagina-reservas-viewguia) .btn-secondary {
+    color: #fff!important;
+    background-color: #6c757d;
+    border-color: #6c757d;
+    padding: 10px;
+}
+:where(.pagina-administrador-view, .pagina-organizadoras-view, .pagina-reservas-view, .pagina-reservas-viewcronograma, .pagina-reservas-viewguia) .btn-primary {
+    color: #fff!important;
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 10px;
+}
+:where(.pagina-administrador-view, .pagina-organizadoras-view, .pagina-reservas-view, .pagina-reservas-viewcronograma, .pagina-reservas-viewguia) .btn-danger {
+    background-color: #dd4b39;
+    border-color: #d73925;
+    padding: 10px;
+}
+
+/* ---------- ADMINISTRADOR y ORGANIZADORAS · ver ---------- */
+:where(.pagina-administrador-view, .pagina-organizadoras-view) .btn-info {
+    color: #fff!important;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    padding: 10px;
+}
+:where(.pagina-administrador-view, .pagina-organizadoras-view) .btn-dark {
+    color: #fff!important;
+    background-color: #343a40;
+    border-color: #343a40;
+    padding: 10px;
+}
+
+/* ---------- RESERVAS (formulario viejo) · ver / ver cronograma / ver guía ---------- */
+:where(.pagina-reservas-view, .pagina-reservas-viewcronograma, .pagina-reservas-viewguia) .btnslinks a {
+    background: #69a322;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+/* ---------- RESERVAS (formulario viejo) · crear / editar / editar guía ---------- */
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .btnactial button {
+    padding: 10px 19px;
+    margin-bottom: 20px;
+    margin-left: 15px;
+    font-size: 20px;
+    font-weight: 600;
+}
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .control-label.col-sm-2 {
+    display: block;
+    font-size: 14px;
+    width: 100%;
+    padding: 10px 15px;
+}
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .form-group .col-sm-10 {
+    width: 100%;
+}
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .row {
+    align-items: flex-start;
+}
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .lelelrel h3 {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #527f1a;
+}
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .lelelrel .center-block {
+    border: 1px solid #527f1a;
+    padding: 5px;
+}
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .datepicker table tr td.active:active,
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .datepicker table tr td.active.highlighted:active,
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .datepicker table tr td.active.active,
+:where(.pagina-reservas-create, .pagina-reservas-update, .pagina-reservas-updateguia) .datepicker table tr td.active.highlighted.active {
+    color: #fff !important;
+    background-color: #527f1a;
+    border-color: #527f1a;
+}
+
+/* ---------- RESERVAS (formulario viejo) · editar guía ---------- */
+:where(.pagina-reservas-updateguia) .field-reservas-fecha_boda label,
+:where(.pagina-reservas-updateguia) .field-reservas-horaiglesia label,
+:where(.pagina-reservas-updateguia) .field-reservas-nombrenovios label,
+:where(.pagina-reservas-updateguia) .field-reservas-salondeeventos label,
+:where(.pagina-reservas-updateguia) .field-reservas-paqueteeventos label,
+:where(.pagina-reservas-updateguia) .field-reservas-horainvitacionevento label,
+:where(.pagina-reservas-updateguia) .field-reservas-musica label,
+:where(.pagina-reservas-updateguia) .field-reservas-horasmusicas label,
+:where(.pagina-reservas-updateguia) .field-reservas-maestradeceremonia label,
+:where(.pagina-reservas-updateguia) .field-reservas-recomendacionsalon label,
+:where(.pagina-reservas-updateguia) .field-reservas-recomendaciondj label,
+:where(.pagina-reservas-updateguia) .field-reservas-celebranter label,
+:where(.pagina-reservas-updateguia) .field-reservas-decoradorar label,
+:where(.pagina-reservas-updateguia) .field-reservas-degustacioncomida label,
+:where(.pagina-reservas-updateguia) .field-reservas-desgustaciontorta label,
+:where(.pagina-reservas-updateguia) .field-reservas-degustacionbarra label,
+:where(.pagina-reservas-updateguia) .field-reservas-coordinadorar label,
+:where(.pagina-reservas-updateguia) .field-reservas-aproxcelebrante label,
+:where(.pagina-reservas-updateguia) .field-reservas-aproxdecoradora label,
+:where(.pagina-reservas-updateguia) .field-reservas-aproxcomida label,
+:where(.pagina-reservas-updateguia) .field-reservas-aproxtorta label,
+:where(.pagina-reservas-updateguia) .field-reservas-aproxbarra label,
+:where(.pagina-reservas-updateguia) .field-reservas-aproxcoordinadora label,
+:where(.pagina-reservas-updateguia) .field-reservas-cerveza label,
+:where(.pagina-reservas-updateguia) .field-reservas-cerveza label,
+:where(.pagina-reservas-updateguia) .field-reservas-sodas label,
+:where(.pagina-reservas-updateguia) .field-reservas-agua label,
+:where(.pagina-reservas-updateguia) .field-reservas-otrosbebidas label,
+:where(.pagina-reservas-updateguia) .field-reservas-barracocteles label,
+:where(.pagina-reservas-updateguia) .field-reservas-horadeapertura label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmbebidas label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmbarradecocteles label,
+:where(.pagina-reservas-updateguia) .field-reservas-dulcebienvenida label,
+:where(.pagina-reservas-updateguia) .field-reservas-mesadulces label,
+:where(.pagina-reservas-updateguia) .field-reservas-mesabocaditos label,
+:where(.pagina-reservas-updateguia) .field-reservas-maquetatortafalsa label,
+:where(.pagina-reservas-updateguia) .field-reservas-horaingresonovios label,
+:where(.pagina-reservas-updateguia) .field-reservas-coreografo label,
+:where(.pagina-reservas-updateguia) .field-reservas-maestoceremoniadet label,
+:where(.pagina-reservas-updateguia) .field-reservas-bailedeingreso label,
+:where(.pagina-reservas-updateguia) .field-reservas-baileprincip label,
+:where(.pagina-reservas-updateguia) .field-reservas-brindis label,
+:where(.pagina-reservas-updateguia) .field-reservas-baileespecial label,
+:where(.pagina-reservas-updateguia) .field-reservas-efectosespeciales label,
+:where(.pagina-reservas-updateguia) .field-reservas-baileespecial label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmmaestrocemonia label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmcoreografo label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmefectosd label,
+:where(.pagina-reservas-updateguia) .field-reservas-detallesimpingresonovis label,
+:where(.pagina-reservas-updateguia) .field-reservas-detallesimportantesbebidas label,
+:where(.pagina-reservas-updateguia) .field-reservas-ingresoin label,
+:where(.pagina-reservas-updateguia) .field-reservas-experienciasin label,
+:where(.pagina-reservas-updateguia) .field-reservas-horacena label,
+:where(.pagina-reservas-updateguia) .field-reservas-cenac label,
+:where(.pagina-reservas-updateguia) .field-reservas-tortac label,
+:where(.pagina-reservas-updateguia) .field-reservas-bocaditosc label,
+:where(.pagina-reservas-updateguia) .field-reservas-horalocac label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmcena label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmtorta label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmbocaditos label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmhoraloca label,
+:where(.pagina-reservas-updateguia) .field-reservas-mariachis label,
+:where(.pagina-reservas-updateguia) .field-reservas-invitaciones label,
+:where(.pagina-reservas-updateguia) .field-reservas-fotografia label,
+:where(.pagina-reservas-updateguia) .field-reservas-video label,
+:where(.pagina-reservas-updateguia) .field-reservas-vestidodenovia label,
+:where(.pagina-reservas-updateguia) .field-reservas-salondebelleza label,
+:where(.pagina-reservas-updateguia) .field-reservas-glitterbar label,
+:where(.pagina-reservas-updateguia) .field-reservas-espejomagico label,
+:where(.pagina-reservas-updateguia) .field-reservas-video360 label,
+:where(.pagina-reservas-updateguia) .field-reservas-memoriphone label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmfotoyvideo label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmsalonbelleza label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmgiiterbar label,
+:where(.pagina-reservas-updateguia) .field-reservas-recmemori label,
+:where(.pagina-reservas-updateguia) .field-reservas-detallesimpoprov label,
+:where(.pagina-reservas-updateguia) .field-reservas-limosna label,
+:where(.pagina-reservas-updateguia) .field-reservas-horantesfiesta label,
+:where(.pagina-reservas-updateguia) .field-reservas-otrosdetallesfiestas label {
+    color: #ff6983;
+}
+
+/* ---------- RESERVAS (formulario viejo) · cronograma boda / quince ---------- */
+:where(.pagina-reservas-createcronograma, .pagina-reservas-updatecronograma) h3.coloh3 {
+    margin-bottom: 10px;
+}
+:where(.pagina-reservas-createcronograma, .pagina-reservas-updatecronograma) label strong {
+    color: GREEN;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* ---------- RESERVAS (formulario viejo) · campos extra ---------- */
+:where(.pagina-reservas-form-campos-extra, .pagina-reservas-form-campos-extra-quince) .grupo-bloque {
+    margin-bottom: 40px;
+    padding: 20px;
+    background: #fdfdfd;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+:where(.pagina-reservas-form-campos-extra, .pagina-reservas-form-campos-extra-quince) .form-control[readonly] {
+    width: auto !important;
+}
+
+/* ---------- RESERVA POR PASOS · común a todos los pasos ---------- */
+:where(.pagina-reserva-pasos) .reserva-pasos .titulo-seccion {
+    color:#527f1a;
+    font-size:20px;
+    font-weight:600;
+    margin:5px 0 15px;
+    border-bottom:1px solid #e3e3e3;
+    padding-bottom:8px;
+}
+:where(.pagina-reserva-pasos) .resumen-reserva {
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 30px;
+    align-items:center;
+    background:#2f4a10;
+    color:#fff;
+    padding:10px 15px;
+    margin-bottom:15px;
+    border-radius:3px;
+    box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+:where(.pagina-reserva-pasos) .resumen-reserva .resumen-bloque {
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+:where(.pagina-reserva-pasos) .resumen-reserva small {
+    opacity:.8;
+}
+:where(.pagina-reserva-pasos) .resumen-reserva .resumen-montos {
+    margin-left:auto;
+    gap:20px;
+}
+:where(.pagina-reserva-pasos) .resumen-reserva .resumen-montos div {
+    display:flex;
+    flex-direction:column;
+    text-align:right;
+}
+:where(.pagina-reserva-pasos) .resumen-reserva .resumen-montos b {
+    font-size:16px;
+}
+:where(.pagina-reserva-pasos) .resumen-reserva .res-saldo b {
+    color:#ffd54f;
+}
+
+/* ---------- RESERVA POR PASOS · create / presupuesto / modificar-presupuesto / pagos / detalles / cronograma ---------- */
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .pasos-reserva {
+    margin-bottom:0;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .pasos-reserva > li > a {
+    font-weight:600;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .pasos-reserva .paso-numero {
+    display:inline-block;
+    width:22px;
+    height:22px;
+    line-height:22px;
+    border-radius:50%;
+    background:#527f1a;
+    color:#fff;
+    text-align:center;
+    font-size:12px;
+    margin-right:4px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .pasos-reserva > li.disabled .paso-numero {
+    background:#bbb;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .caja-paso {
+    border-top-left-radius:0;
+}
+
+/* ---------- RESERVA POR PASOS · create / presupuesto / modificar-presupuesto / ver ---------- */
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .tabla-lineas th {
+    background:#f4f8ee;
+    white-space:nowrap;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .tabla-lectura td {
+    vertical-align:middle !important;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .tabla-lectura .fila-paquete-lectura td {
+    background:#fafcf7;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .observaciones-lectura {
+    background:#fafafa;
+    border:1px solid #eee;
+    padding:8px 12px;
+    border-radius:3px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .historial-presupuesto .enlace-historial {
+    color:#527f1a;
+    text-decoration:none;
+    display:block;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .historial-presupuesto .enlace-historial .badge {
+    background:#527f1a;
+    vertical-align:middle;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .historial-presupuesto .flecha {
+    float:right;
+    font-size:14px;
+    margin-top:6px;
+    transition:transform .2s;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .historial-presupuesto .enlace-historial:not(.collapsed) .flecha {
+    transform:rotate(180deg);
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .lista-historial {
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .lista-historial > li {
+    border-left:3px solid #f0ad4e;
+    background:#fffdf7;
+    padding:8px 12px;
+    margin-bottom:10px;
+    border-radius:0 3px 3px 0;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .lista-historial > li.evento-creado {
+    border-left-color:#527f1a;
+    background:#fafcf7;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .lista-historial .cabecera-evento {
+    font-size:13px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .lista-historial .motivo-evento {
+    font-size:12px;
+    color:#8a6d3b;
+    margin-top:3px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-ver) .lista-historial .cambios-evento {
+    margin:6px 0 0;
+    padding-left:18px;
+    font-size:13px;
+}
+
+/* ---------- RESERVA POR PASOS · create / presupuesto / modificar-presupuesto ---------- */
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .tabla-lineas .col-num {
+    width:120px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .tabla-lineas .col-pct {
+    width:95px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .tabla-lineas .col-accion {
+    width:45px;
+    text-align:center;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .tabla-lineas .col-subtotal {
+    text-align:right;
+    vertical-align:middle;
+    color:#555;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .tabla-lineas input.num {
+    text-align:right;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .tabla-lineas .detalle-linea {
+    display:block;
+    margin-top:3px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .detalle-paquete {
+    background:#fafcf7;
+    border:1px dashed #c5d9a8;
+    padding:10px 15px;
+    border-radius:3px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .calendarios h4 {
+    text-align:center;
+    color:#527f1a;
+    font-weight:600;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .calendario-sucursal .datepicker-inline {
+    margin:0 auto;
+    border:1px solid #527f1a;
+    padding:5px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .calendario-sucursal td.ocupado,
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .muestra-ocupado {
+    background:#527f1a !important;
+    color:#fff !important;
+    border-radius:3px;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .muestra-ocupado {
+    display:inline-block;
+    width:14px;
+    height:14px;
+    vertical-align:middle;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .calendario-sucursal td.active {
+    background:#f0ad4e !important;
+    color:#fff !important;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .aviso-modificar {
+    margin-bottom:0;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto) .lista-historial .cambios-evento li {
+    margin-bottom:2px;
+}
+
+/* ---------- RESERVA POR PASOS · create / presupuesto / modificar-presupuesto / pagos / ver ---------- */
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-ver) .tabla-totales th {
+    text-align:right;
+}
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-ver) .tabla-totales td {
+    text-align:right;
+    width:45%;
+    font-size:15px;
+}
+
+/* ---------- RESERVA POR PASOS · create / presupuesto / modificar-presupuesto / pagos ---------- */
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos) .tabla-totales .fila-total th,
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos) .tabla-totales .fila-total td {
+    font-size:20px;
+    color:#527f1a;
+    border-top:2px solid #527f1a;
+}
+
+/* ---------- RESERVA POR PASOS · pagos ---------- */
+:where(.pagina-reserva-pasos-pagos) .encabezado-pagos {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #e3e3e3;
+    margin-bottom:15px;
+}
+:where(.pagina-reserva-pasos-pagos) .encabezado-pagos .titulo-seccion {
+    border-bottom:0;
+    margin-bottom:8px;
+}
+:where(.pagina-reserva-pasos-pagos) .etiqueta-pagado {
+    font-size:13px;
+    padding:6px 10px;
+}
+:where(.pagina-reserva-pasos-pagos) .panel-nuevo-pago {
+    background:#fafcf7;
+    border:1px dashed #c5d9a8;
+    padding:15px 15px 0;
+    border-radius:3px;
+    margin-bottom:20px;
+}
+:where(.pagina-reserva-pasos-pagos) .botones-pago {
+    padding-top:25px;
+}
+:where(.pagina-reserva-pasos-pagos) .botones-pago .btn {
+    margin-bottom:8px;
+}
+:where(.pagina-reserva-pasos-pagos) .tabla-pagos th {
+    background:#f4f8ee;
+    white-space:nowrap;
+}
+:where(.pagina-reserva-pasos-pagos) .tabla-pagos td {
+    vertical-align:middle !important;
+}
+:where(.pagina-reserva-pasos-pagos) .tabla-pagos .col-observacion {
+    max-width:260px;
+    font-size:12px;
+}
+:where(.pagina-reserva-pasos-pagos) .tabla-pagos .col-registro {
+    white-space:nowrap;
+    font-size:12px;
+}
+:where(.pagina-reserva-pasos-pagos) .tabla-pagos tr.fila-motivo td {
+    border-top:0;
+    background:#fdf3f2;
+    color:#a94442;
+    font-size:12px;
+}
+:where(.pagina-reserva-pasos-pagos) .sin-pagos {
+    padding:15px 0;
+}
+
+/* ---------- RESERVA POR PASOS · pagos / ver ---------- */
+:where(.pagina-reserva-pasos-pagos, .pagina-reserva-pasos-ver) .tabla-pagos tr.pago-anulado td {
+    color:#999;
+    background:#fbfbfb;
+}
+:where(.pagina-reserva-pasos-pagos, .pagina-reserva-pasos-ver) .tabla-pagos tr.pago-anulado td.tachable {
+    text-decoration:line-through;
+}
+
+/* ---------- RESERVA POR PASOS · detalles ---------- */
+:where(.pagina-reserva-pasos-detalles) .titulo-seccion .boton-galeria {
+    font-size:12px;
+    font-weight:normal;
+    margin-top:2px;
+}
+:where(.pagina-reserva-pasos-detalles) .caja-invitados {
+    background:#fafcf7;
+    border:1px dashed #c5d9a8;
+    padding:10px 15px;
+    border-radius:3px;
+}
+
+/* ---------- RESERVA POR PASOS · cronograma ---------- */
+:where(.pagina-reserva-pasos-cronograma) .ayuda-cronograma {
+    background:#fafcf7;
+    border:1px dashed #c5d9a8;
+    padding:10px 15px;
+    border-radius:3px;
+    margin-bottom:15px;
+}
+:where(.pagina-reserva-pasos-cronograma) .ayuda-cronograma kbd {
+    background:#527f1a;
+}
+:where(.pagina-reserva-pasos-cronograma) .cronograma-vista .titulo-cronograma {
+    color:#527f1a;
+    font-size:22px;
+    font-weight:600;
+    margin:0 0 15px;
+    text-align:center;
+}
+
+/* ---------- RESERVA POR PASOS · cronograma / ver ---------- */
+:where(.pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-ver) .cronograma-vista {
+    background:#fff;
+    color:#000;
+    padding:20px;
+    border:1px solid #ddd;
+    overflow-x:auto;
+    font-family:Calibri, Arial, sans-serif;
+    font-size:14px;
+    line-height:1.35;
+}
+:where(.pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-ver) .cronograma-vista table {
+    border-collapse:collapse;
+    max-width:100%;
+}
+:where(.pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-ver) .cronograma-vista td,
+:where(.pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-ver) .cronograma-vista th {
+    vertical-align:top;
+}
+:where(.pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-ver) .cronograma-vista p {
+    margin:0 0 6px;
+}
+
+/* ---------- RESERVA POR PASOS · ver ---------- */
+:where(.pagina-reserva-pasos-ver) .ficha-reserva .accesos {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+}
+:where(.pagina-reserva-pasos-ver) .ficha-reserva .box-title {
+    color:#527f1a;
+    font-weight:600;
+}
+:where(.pagina-reserva-pasos-ver) .ficha-reserva .subtitulo {
+    color:#527f1a;
+    font-size:15px;
+    font-weight:600;
+    margin:18px 0 8px;
+    border-bottom:1px dashed #dde8cf;
+    padding-bottom:4px;
+}
+:where(.pagina-reserva-pasos-ver) .ficha-reserva .datos > div {
+    margin-bottom:12px;
+}
+:where(.pagina-reserva-pasos-ver) .ficha-reserva .datos small {
+    display:block;
+    color:#888;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.3px;
+}
+:where(.pagina-reserva-pasos-ver) .ficha-reserva .datos .html {
+    background:#fafafa;
+    border:1px solid #eee;
+    border-radius:3px;
+    padding:6px 10px;
+    min-height:34px;
+}
+:where(.pagina-reserva-pasos-ver) .ficha-reserva .datos .html p {
+    margin:0 0 4px;
+}
+:where(.pagina-reserva-pasos-ver) .tabla-totales .fila-total th,
+:where(.pagina-reserva-pasos-ver) .tabla-totales .fila-total td {
+    font-size:18px;
+    color:#527f1a;
+    border-top:2px solid #527f1a;
+}
+:where(.pagina-reserva-pasos-ver) .tabla-pagos th {
+    background:#f4f8ee;
+}
+:where(.pagina-reserva-pasos-ver) .miniaturas {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+:where(.pagina-reserva-pasos-ver) .miniaturas .miniatura img {
+    width:110px;
+    height:110px;
+    object-fit:cover;
+    border:1px solid #ddd;
+    border-radius:3px;
+}

@@ -13,13 +13,6 @@ $this->title = 'Organizadoras';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
-    <style>
-
-
-
-
-
-    </style>
 
     <section class="content-header">
 
@@ -138,7 +131,9 @@ $this->params['breadcrumbs'][] = $this->title;
                                             },
                                             'delete' => function ($url, $model, $key) {
                                                 return Html::a('<i class="fa fa-trash"></i>', $url, ['class' => 'btn btn-danger', 'data' => [
-                                                    'confirm' => 'Esta seguro?.'
+                                                    'confirm' => 'Esta seguro?.',
+                                                    'method' => 'post',
+                                                    'pjax' => '0',
                                                 ], "title" => "Eliminar"]);
                                             },
 
@@ -158,39 +153,8 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
     </section>
 
-    <style>
-        .btn-success2 > i {
-            color: white!important;
-
-        }
-        .btn-success2 {
-            background-color: #d24318;
-            border-color: #d24318;
-        }
-
-        .btn-success3 > i {
-            color: white!important;
-
-        }
-        .btn-success3 {
-            background-color: #395398;
-            border-color: #395398;
-        }
-
-
-    </style>
 
 
 
 <?php
-$script = <<<JS
-    function action(url)
-    {
-    $.get(url, function(data) {
-      $.pjax.reload({container:"#table"});
-    });
-    }
-
-JS;
-$this->registerJs($script, \yii\web\View::POS_HEAD);
 

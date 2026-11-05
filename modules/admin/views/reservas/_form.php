@@ -11,14 +11,7 @@ use yii\helpers\Html;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 <?php
-$format = <<< SCRIPT
-function format(state) {
-if (!state.id) return state.text; // optgroup
-return state.text;
-}
-SCRIPT;
 $escape = new \yii\web\JsExpression("function(m) { return m; }");
-$this->registerJs($format, \yii\web\View::POS_HEAD);
 ?>
 <?php
 $initial = [];
@@ -135,54 +128,6 @@ array_push($initial3, Html::img('@web/imagen/usuarios/' . $model->presupuestofil
             ?>
 
 
-            <style>
-
-                .btnactial button{
-                    padding: 10px 19px;
-                    margin-bottom: 20px;
-                    margin-left: 15px;
-                    font-size: 20px;
-                    font-weight: 600;
-                }
-
-
-
-                .control-label.col-sm-2{
-                    display: block;
-                    font-size: 14px;
-                    width: 100%;
-                    padding: 10px 15px
-                }
-
-                .form-group .col-sm-10{
-
-                width: 100%; }
-                .row{
-                align-items: flex-start; /* Asegura la alineación superior */
-                }
-                .lelelrel h3 {
-
-
-                    text-align: center;
-                    font-size: 18px;
-                    font-weight: 600;
-                    color: #527f1a;
-                }
-
-                .lelelrel .center-block {
-
-                    border: 1px solid #527f1a;
-                    padding: 5px;
-                }
-
-                .datepicker table tr td.active:active, .datepicker table tr td.active.highlighted:active, .datepicker table tr td.active.active, .datepicker table tr td.active.highlighted.active {
-                    color: #fff !important;
-                    background-color: #527f1a;
-                    border-color: #527f1a;
-                }
-
-
-            </style>
 
             <DIV CLASS="lelelrel">
                 <div class="col-xs-12" style="margin-top: 20px; margin-bottom: 30px;">

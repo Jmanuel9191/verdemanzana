@@ -73,7 +73,11 @@ $this->params['breadcrumbs'][] = $this->title;
                                             return Html::a('<i class="fa fa-pencil"></i>', $url, ['class' => 'btn btn-info']);
                                         },
                                         'delete' => function ($url, $model, $key) {
-                                            return Html::a('<i class="fa fa-trash"></i>', $url, ['class' => 'btn btn-danger']);
+                                            return Html::a('<i class="fa fa-trash"></i>', $url, ['class' => 'btn btn-danger', 'title' => 'Eliminar', 'data' => [
+                        'confirm' => 'Esta seguro?.',
+                        'method' => 'post',
+                        'pjax' => '0',
+                    ]]);
                                         },
                                     ],
                                     'contentOptions' => ['class' => 'col-sm-1']

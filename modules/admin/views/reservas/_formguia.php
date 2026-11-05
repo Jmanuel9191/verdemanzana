@@ -1,6 +1,5 @@
 <?php
 
-use dosamigos\ckeditor\CKEditor;
 use kartik\form\ActiveForm;
 use kartik\select2\Select2;
 use kartik\widgets\DatePicker;
@@ -11,14 +10,7 @@ use yii\helpers\Html;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 <?php
-$format = <<< SCRIPT
-function format(state) {
-if (!state.id) return state.text; // optgroup
-return state.text;
-}
-SCRIPT;
 $escape = new \yii\web\JsExpression("function(m) { return m; }");
-$this->registerJs($format, \yii\web\View::POS_HEAD);
 ?>
 
 <script src="../../assets_b/js/bootstrap-datepicker.min.js"></script>
@@ -162,52 +154,6 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
 
 
 
-            <style>
-
-                .btnactial button{
-                    padding: 10px 19px;
-                    margin-bottom: 20px;
-                    margin-left: 15px;
-                    font-size: 20px;
-                    font-weight: 600;
-                }
-
-                .control-label.col-sm-2{
-                    display: block;
-                    font-size: 14px;
-                    width: 100%;
-                    padding: 10px 15px
-                }
-
-                .form-group .col-sm-10{
-
-                width: 100%; }
-                .row{
-                align-items: flex-start; /* Asegura la alineación superior */
-                }
-                .lelelrel h3 {
-
-
-                    text-align: center;
-                    font-size: 18px;
-                    font-weight: 600;
-                    color: #527f1a;
-                }
-
-                .lelelrel .center-block {
-
-                    border: 1px solid #527f1a;
-                    padding: 5px;
-                }
-
-                .datepicker table tr td.active:active, .datepicker table tr td.active.highlighted:active, .datepicker table tr td.active.active, .datepicker table tr td.active.highlighted.active {
-                    color: #fff !important;
-                    background-color: #527f1a;
-                    border-color: #527f1a;
-                }
-
-
-            </style>
 
 
 
@@ -436,22 +382,3 @@ $this->registerJs($format, \yii\web\View::POS_HEAD);
     </div>
 
 
-<style>
-    .field-reservas-fecha_boda label, .field-reservas-horaiglesia label, .field-reservas-nombrenovios label, .field-reservas-salondeeventos label, .field-reservas-paqueteeventos label, .field-reservas-horainvitacionevento label,
-    .field-reservas-musica label, .field-reservas-horasmusicas label, .field-reservas-maestradeceremonia label, .field-reservas-recomendacionsalon label, .field-reservas-recomendaciondj label, .field-reservas-celebranter label,
-    .field-reservas-decoradorar label, .field-reservas-degustacioncomida label, .field-reservas-desgustaciontorta label, .field-reservas-degustacionbarra label, .field-reservas-coordinadorar label, .field-reservas-aproxcelebrante label,
-    .field-reservas-aproxdecoradora label,  .field-reservas-aproxcomida label, .field-reservas-aproxtorta label, .field-reservas-aproxbarra label, .field-reservas-aproxcoordinadora label, .field-reservas-cerveza label,
-    .field-reservas-cerveza label, .field-reservas-sodas label, .field-reservas-agua label, .field-reservas-otrosbebidas label, .field-reservas-barracocteles label, .field-reservas-horadeapertura label, .field-reservas-recmbebidas label, .field-reservas-recmbarradecocteles label,
-    .field-reservas-dulcebienvenida label, .field-reservas-mesadulces label, .field-reservas-mesabocaditos label, .field-reservas-maquetatortafalsa label,
-    .field-reservas-horaingresonovios label, .field-reservas-coreografo label, .field-reservas-maestoceremoniadet label, .field-reservas-bailedeingreso label, .field-reservas-baileprincip label, .field-reservas-brindis label, .field-reservas-baileespecial label, .field-reservas-efectosespeciales label, .field-reservas-baileespecial label, .field-reservas-recmmaestrocemonia label,
-    .field-reservas-recmcoreografo label, .field-reservas-recmefectosd label,  .field-reservas-detallesimpingresonovis label,
-    .field-reservas-detallesimportantesbebidas label, .field-reservas-ingresoin label, .field-reservas-experienciasin label,
-    .field-reservas-horacena label, .field-reservas-cenac label, .field-reservas-tortac label, .field-reservas-bocaditosc label, .field-reservas-horalocac label, .field-reservas-recmcena label, .field-reservas-recmtorta label,
-    .field-reservas-recmbocaditos label, .field-reservas-recmhoraloca label, .field-reservas-mariachis label,
-    .field-reservas-invitaciones label, .field-reservas-fotografia  label, .field-reservas-video  label, .field-reservas-vestidodenovia label, .field-reservas-salondebelleza label,  .field-reservas-glitterbar label,  .field-reservas-espejomagico  label, .field-reservas-video360 label,
-    .field-reservas-memoriphone label, .field-reservas-recmfotoyvideo label, .field-reservas-recmsalonbelleza label,  .field-reservas-recmgiiterbar label,  .field-reservas-recmemori label, .field-reservas-detallesimpoprov label,  .field-reservas-limosna label, .field-reservas-horantesfiesta label, .field-reservas-otrosdetallesfiestas label
-     {
-        color: #ff6983;
-    }
-
-</style>

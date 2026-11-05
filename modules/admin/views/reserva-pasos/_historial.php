@@ -22,7 +22,7 @@ foreach ($historial as $h) {
 <div class="box-body historial-presupuesto">
     <h3 class="titulo-seccion">
         <a data-toggle="collapse" href="#historial-cambios" class="enlace-historial collapsed">
-            <i class="fa fa-history"></i> Historial de cambios del presupuesto
+           Historial de cambios del presupuesto
             <span class="badge"><?= $cantidad ?></span>
             <i class="fa fa-chevron-down flecha"></i>
         </a>

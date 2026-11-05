@@ -32,25 +32,6 @@ $texto = $cronograma ? 'Editar Cronograma' : 'Crear Cronograma';
     <h1><?= Html::encode($this->title) ?></h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
-    <style>
-        .btn-secondary {
-            color: #fff!important;
-            background-color: #6c757d;
-            border-color: #6c757d;
-            padding: 10px;
-        }
-        .btn-primary {
-            color: #fff!important;
-            background-color: #007bff;
-            border-color: #007bff;
-            padding: 10px;
-        }
-        .btn-danger {
-            background-color: #dd4b39;
-            border-color: #d73925;
-            padding: 10px;
-        }
-    </style>
 
 </section>
 <!-- Main content -->
@@ -336,45 +317,7 @@ $texto = $cronograma ? 'Editar Cronograma' : 'Crear Cronograma';
             </div>
         </div>
 </section>
-<style>
-    .btnslinks a {
-        background: #69a322;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 5px;
-        display: inline-block;
-        margin-bottom: 10px;
-        font-weight: 600;
-    }
-</style>
 
 
 <?php
-$script = <<<JS
-
-$(".image-popup").magnificPopup({
-    type: "image",
-    closeOnContentClick: false,
-    removalDelay: 600,
-    mainClass: "my-mfp-slide-bottom",
-    image: {
-        verticalFit: true
-    },
-    gallery: {
-        enabled: true,
-        navigateByImgClick: true,
-        preload: [0, 1],
-        tPrev: 'Anterior',
-        tNext: 'Siguiente',
-        tCounter: '%curr% de %total%',
-        arrowMarkup: '<button title="%title%" type="button" class="mfp-arrow mfp-arrow-%dir%"></button>' // Define las flechas
-    }
-});
-
-
-
-
-
-JS;
-$this->registerJs($script, \yii\web\View::POS_END);
 

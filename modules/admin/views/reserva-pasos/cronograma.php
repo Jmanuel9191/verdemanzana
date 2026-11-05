@@ -50,14 +50,7 @@ $guardado = !$cronograma->isNewRecord;
 
     <div class="box box-success caja-paso">
         <div class="box-body">
-            <h3 class="titulo-seccion"><i class="fa fa-clock-o"></i> <?= Html::encode($titulo) ?></h3>
-
-            <div class="ayuda-cronograma">
-                <i class="fa fa-lightbulb-o"></i>
-                Armá el cronograma en Word, seleccioná todo (<kbd>Ctrl</kbd>+<kbd>A</kbd>), copiá (<kbd>Ctrl</kbd>+<kbd>C</kbd>)
-                y pegalo acá (<kbd>Ctrl</kbd>+<kbd>V</kbd>). Se mantienen tablas, colores, negritas, tamaños y alineación.
-                <b>Las imágenes pegadas no se copian.</b>
-            </div>
+            <h3 class="titulo-seccion"> <?= Html::encode($titulo) ?></h3>
 
             <?= $af->field($cronograma, 'contenido')->widget(CKEditor::class, ReservaCronograma::opcionesEditor())->label(false) ?>
 
@@ -70,7 +63,7 @@ $guardado = !$cronograma->isNewRecord;
         </div>
 
         <div class="box-footer">
-            <?= Html::submitButton('<i class="fa fa-save"></i> Guardar cronograma', ['class' => 'btn btn-success btn-lg']) ?>
+            <?= Html::submitButton(' Guardar cronograma', ['class' => 'btn btn-success btn-lg']) ?>
             <?= Html::a('<i class="fa fa-arrow-left"></i> Detalles', ['detalles', 'id' => $reserva->idreservas], ['class' => 'btn btn-default btn-lg']) ?>
             <?= Html::a('Ir al listado de reservas', ['reservas/index'], ['class' => 'btn btn-default btn-lg']) ?>
         </div>
@@ -102,24 +95,3 @@ $guardado = !$cronograma->isNewRecord;
     </div>
 </section>
 
-<?php
-$this->registerCss(<<<CSS
-.reserva-pasos .titulo-seccion { color:#527f1a; font-size:20px; font-weight:600; margin:5px 0 15px; border-bottom:1px solid #e3e3e3; padding-bottom:8px; }
-.pasos-reserva { margin-bottom:0; }
-.pasos-reserva > li > a { font-weight:600; }
-.pasos-reserva .paso-numero { display:inline-block; width:22px; height:22px; line-height:22px; border-radius:50%; background:#527f1a; color:#fff; text-align:center; font-size:12px; margin-right:4px; }
-.pasos-reserva > li.disabled .paso-numero { background:#bbb; }
-.caja-paso { border-top-left-radius:0; }
-.resumen-reserva { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:10px 30px; align-items:center; background:#2f4a10; color:#fff; padding:10px 15px; margin-bottom:15px; border-radius:3px; box-shadow:0 2px 6px rgba(0,0,0,.2); }
-.resumen-reserva .resumen-bloque { display:flex; gap:8px; align-items:center; }
-.resumen-reserva small { opacity:.8; }
-.resumen-reserva .resumen-montos { margin-left:auto; gap:20px; }
-.resumen-reserva .resumen-montos div { display:flex; flex-direction:column; text-align:right; }
-.resumen-reserva .resumen-montos b { font-size:16px; }
-.resumen-reserva .res-saldo b { color:#ffd54f; }
-.ayuda-cronograma { background:#fafcf7; border:1px dashed #c5d9a8; padding:10px 15px; border-radius:3px; margin-bottom:15px; }
-.ayuda-cronograma kbd { background:#527f1a; }
-.cronograma-vista .titulo-cronograma { color:#527f1a; font-size:22px; font-weight:600; margin:0 0 15px; text-align:center; }
-CSS);
-$this->registerCss(ReservaCronograma::cssVista());
-?>

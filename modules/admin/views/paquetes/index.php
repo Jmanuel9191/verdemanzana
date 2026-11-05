@@ -146,19 +146,3 @@ $this->params['breadcrumbs'][] = $this->title;
 </section>
 <?php
 // Ojo de estado: POST por AJAX (con token CSRF) y recarga solo la grilla.
-$js = <<<JS
-$(document).on('click', '.btn-paquete-estado', function (e) {
-    e.preventDefault();
-    var btn = $(this);
-    btn.prop('disabled', true);
-    $.post(btn.data('url'), {_csrf: yii.getCsrfToken()})
-        .done(function () {
-            $.pjax.reload({container: '#grilla-paquetes', timeout: 5000});
-        })
-        .fail(function () {
-            alert('No se pudo cambiar el estado. Recargá la página e intentá de nuevo.');
-            btn.prop('disabled', false);
-        });
-});
-JS;
-$this->registerJs($js);

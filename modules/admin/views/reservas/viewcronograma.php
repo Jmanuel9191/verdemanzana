@@ -1,14 +1,12 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\DetailView;
 use app\models\CronogramaBoda;
 use app\models\DetalleCronograma;
 /* @var $this yii\web\View */
 /* @var $model app\models\Usuarios */
 use app\models\DetalleCronogramaExtra;
 use app\models\FormLayoutOrden;
-use app\models\MomentosCronograma;
 
 $this->title = $model->nombre;
 $this->params['breadcrumbs'][] = ['label' => 'Cronograma', 'url' => ['index']];
@@ -30,25 +28,6 @@ $texto = $cronograma ? 'Editar Cronograma' : 'Crear Cronograma';
     <h1><?= Html::encode($this->title) ?></h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
-    <style>
-        .btn-secondary {
-            color: #fff!important;
-            background-color: #6c757d;
-            border-color: #6c757d;
-            padding: 10px;
-        }
-        .btn-primary {
-            color: #fff!important;
-            background-color: #007bff;
-            border-color: #007bff;
-            padding: 10px;
-        }
-        .btn-danger {
-            background-color: #dd4b39;
-            border-color: #d73925;
-            padding: 10px;
-        }
-    </style>
 
 </section>
 <!-- Main content -->
@@ -196,16 +175,5 @@ $texto = $cronograma ? 'Editar Cronograma' : 'Crear Cronograma';
             </div>
         </div>
 </section>
-<style>
-    .btnslinks a {
-        background: #69a322;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 5px;
-        display: inline-block;
-        margin-bottom: 10px;
-        font-weight: 600;
-    }
-</style>
 
 

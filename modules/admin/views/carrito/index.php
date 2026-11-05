@@ -60,14 +60,4 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
 </section>
 <?php
-$script = <<<JS
-    function action(url)
-    {
-    $.get(url, function(data) {
-      $.pjax.reload({container:"#table"});
-    });
-    }
-
-JS;
-$this->registerJs($script, \yii\web\View::POS_HEAD);
 

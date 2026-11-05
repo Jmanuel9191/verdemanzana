@@ -61,7 +61,7 @@ $botonGaleria = function (string $accion, $imagenes) use ($reserva) {
 
         <!-- ===================== ORGANIZADORA ===================== -->
         <div class="box-body">
-            <h3 class="titulo-seccion"><i class="fa fa-user-circle"></i> Organizadora y personal</h3>
+            <h3 class="titulo-seccion"> Organizadora y personal</h3>
             <div class="row">
                 <div class="col-md-6">
                     <?= $af->field($form, 'idorganizadora')->widget(Select2::class, [
@@ -89,20 +89,19 @@ $botonGaleria = function (string $accion, $imagenes) use ($reserva) {
                 </div>
             </div>
 
-            <div class="caja-invitados">
+            <div class="caja-invitados" >
                 <i class="fa fa-users"></i>
                 Lista de invitados: <b><?= $invitados ?></b> cargados
                 <?php if ($limite > 0): ?>
                     de <b><?= $limite ?></b> (límite según el paquete del Paso 1)
                 <?php endif; ?>
-                <?= Html::a('<i class="fa fa-list"></i> Ver / cargar lista de invitados', ['reservas/invitados', 'idreservas' => $reserva->idreservas],
-                    ['class' => 'btn btn-default btn-sm', 'style' => 'margin-left:10px']) ?>
-            </div>
+             <?= Html::a('<i class="fa fa-list"></i> Ver / cargar lista de invitados', ['reservas/invitados', 'idreservas' => $reserva->idreservas],
+    ['class' => 'btn btn-default btn-sm', 'target' => '_blank', 'rel' => 'noopener', 'style' => 'margin-left:10px; background: #2f4a10; color: white !important; font-weight: 600; font-size: 15px;']) ?> </div>
         </div>
 
         <!-- ===================== EQUIPAMIENTO ===================== -->
         <div class="box-body">
-            <h3 class="titulo-seccion"><i class="fa fa-cutlery"></i> Equipamiento <?= $botonGaleria('galeriaequipamiento', $reserva->galeriaequipamiento) ?></h3>
+            <h3 class="titulo-seccion"> Equipamiento <?= $botonGaleria('galeriaequipamiento', $reserva->galeriaequipamiento) ?></h3>
             <div class="row">
                 <div class="col-md-3 col-sm-6"><?= $af->field($form, 'color_sillas')->textInput(['maxlength' => 500]) ?></div>
                 <div class="col-md-3 col-sm-6"><?= $af->field($form, 'color_servilleta')->textInput(['maxlength' => 500]) ?></div>
@@ -118,7 +117,7 @@ $botonGaleria = function (string $accion, $imagenes) use ($reserva) {
 
         <!-- ===================== DECORACIÓN ===================== -->
         <div class="box-body">
-            <h3 class="titulo-seccion"><i class="fa fa-leaf"></i> Decoración <?= $botonGaleria('galeriadecoracionus', $reserva->galeriadecoracionus) ?></h3>
+            <h3 class="titulo-seccion"> Decoración <?= $botonGaleria('galeriadecoracionus', $reserva->galeriadecoracionus) ?></h3>
             <div class="row">
                 <div class="col-md-6"><?= $af->field($form, 'nombre_decoradora')->textInput(['maxlength' => 500]) ?></div>
             </div>
@@ -131,7 +130,7 @@ $botonGaleria = function (string $accion, $imagenes) use ($reserva) {
 
         <!-- ===================== COORDINACIÓN ===================== -->
         <div class="box-body">
-            <h3 class="titulo-seccion"><i class="fa fa-clipboard"></i> Coordinación <?= $botonGaleria('galeriacoordinacion', $reserva->galeriacoordinacion) ?></h3>
+            <h3 class="titulo-seccion"></i> Coordinación <?= $botonGaleria('galeriacoordinacion', $reserva->galeriacoordinacion) ?></h3>
             <div class="row">
                 <div class="col-md-4"><?= $af->field($form, 'nombre_cordinadora')->textInput(['maxlength' => 500]) ?></div>
                 <div class="col-md-4"><?= $af->field($form, 'nombre_subcordinadora')->textInput(['maxlength' => 500]) ?></div>
@@ -141,8 +140,8 @@ $botonGaleria = function (string $accion, $imagenes) use ($reserva) {
         </div>
 
         <div class="box-footer">
-            <?= Html::submitButton('<i class="fa fa-save"></i> Guardar detalles', ['class' => 'btn btn-success btn-lg']) ?>
-            <?= Html::a('<i class="fa fa-file-pdf-o"></i> PDF (lo guardado)', ['pdf', 'id' => $reserva->idreservas, 'tipo' => 'detalles'],
+            <?= Html::submitButton(' Guardar detalles', ['class' => 'btn btn-success btn-lg']) ?>
+            <?= Html::a(' PDF (lo guardado)', ['pdf', 'id' => $reserva->idreservas, 'tipo' => 'detalles'],
                 ['class' => 'btn btn-danger btn-lg', 'target' => '_blank']) ?>
             <?= Html::a('<i class="fa fa-arrow-left"></i> Pagos', ['pagos', 'id' => $reserva->idreservas], ['class' => 'btn btn-default btn-lg']) ?>
             <?= Html::a('Ir al listado de reservas', ['reservas/index'], ['class' => 'btn btn-default btn-lg']) ?>
@@ -152,25 +151,3 @@ $botonGaleria = function (string $accion, $imagenes) use ($reserva) {
     <?php ActiveForm::end(); ?>
 </section>
 
-<?php
-$this->registerCss(<<<CSS
-.reserva-pasos .titulo-seccion { color:#527f1a; font-size:20px; font-weight:600; margin:5px 0 15px; border-bottom:1px solid #e3e3e3; padding-bottom:8px; }
-.pasos-reserva { margin-bottom:0; }
-.pasos-reserva > li > a { font-weight:600; }
-.pasos-reserva .paso-numero { display:inline-block; width:22px; height:22px; line-height:22px; border-radius:50%; background:#527f1a; color:#fff; text-align:center; font-size:12px; margin-right:4px; }
-.pasos-reserva > li.disabled .paso-numero { background:#bbb; }
-.caja-paso { border-top-left-radius:0; }
-.resumen-reserva { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:10px 30px; align-items:center; background:#2f4a10; color:#fff; padding:10px 15px; margin-bottom:15px; border-radius:3px; box-shadow:0 2px 6px rgba(0,0,0,.2); }
-.resumen-reserva .resumen-bloque { display:flex; gap:8px; align-items:center; }
-.resumen-reserva small { opacity:.8; }
-.resumen-reserva .resumen-montos { margin-left:auto; gap:20px; }
-.resumen-reserva .resumen-montos div { display:flex; flex-direction:column; text-align:right; }
-.resumen-reserva .resumen-montos b { font-size:16px; }
-.resumen-reserva .res-saldo b { color:#ffd54f; }
-.titulo-seccion .boton-galeria { font-size:12px; font-weight:normal; margin-top:2px; }
-.caja-invitados { background:#fafcf7; border:1px dashed #c5d9a8; padding:10px 15px; border-radius:3px; }
-CSS);
-
-// Evita guardar con Enter en los campos de una línea
-$this->registerJs("$('#form-detalles').on('keydown', 'input', function (e) { if (e.key === 'Enter') { e.preventDefault(); } });");
-?>

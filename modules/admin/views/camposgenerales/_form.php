@@ -9,14 +9,7 @@ use dosamigos\ckeditor\CKEditor;
 /* @var $model app\models\FormTextosEstaticos */
 /* @var $form yii\widgets\ActiveForm */
 
-$format = <<< SCRIPT
-function format(state) {
-    if (!state.id) return state.text;
-    return state.text;
-}
-SCRIPT;
 $escape = new \yii\web\JsExpression("function(m) { return m; }");
-$this->registerJs($format, \yii\web\View::POS_HEAD);
 ?>
 
     <div class="box-body">

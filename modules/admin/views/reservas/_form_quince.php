@@ -1,9 +1,7 @@
 <?php
 
-use dosamigos\ckeditor\CKEditor;
 use kartik\form\ActiveForm;
 use kartik\select2\Select2;
-use kartik\widgets\DatePicker;
 use yii\helpers\Html;
 use kartik\widgets\TimePicker;
 use app\models\MomentosCronograma;
@@ -13,14 +11,7 @@ use app\models\MomentosCronograma;
 /* @var $form yii\widgets\ActiveForm */
 /* @var $detalles app\models\DetalleCronograma[] */
 
-$format = <<< SCRIPT
-function format(state) {
-    if (!state.id) return state.text;
-    return state.text;
-}
-SCRIPT;
 $escape = new \yii\web\JsExpression("function(m) { return m; }");
-$this->registerJs($format, \yii\web\View::POS_HEAD);
 
 $detalles = isset($detalles) ? $detalles : [];
 $index = 0;
@@ -119,13 +110,3 @@ $index = 0;
     <?php ActiveForm::end(); ?>
 </div>
 
-<style>
-    h3.coloh3 {
-        margin-bottom: 10px;
-    }
-    label strong {
-        color: GREEN;
-        font-weight: 600;
-        font-size: 14px;
-    }
-</style>

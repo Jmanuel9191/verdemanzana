@@ -17,9 +17,9 @@ $this->title = 'Ítems / Proveedores';
 $this->params['breadcrumbs'][] = $this->title;
 
 $pestanas = [
-    Items::TIPO_ITEM      => ['Ítems', 'fa-cube', $totales[Items::TIPO_ITEM] ?? 0],
-    Items::TIPO_PROVEEDOR => ['Proveedores', 'fa-truck', $totales[Items::TIPO_PROVEEDOR] ?? 0],
-    ''                    => ['Todos', 'fa-list', array_sum($totales)],
+    Items::TIPO_ITEM      => ['Ítems', '', $totales[Items::TIPO_ITEM] ?? 0],
+    Items::TIPO_PROVEEDOR => ['Proveedores', '', $totales[Items::TIPO_PROVEEDOR] ?? 0],
+    ''                    => ['Todos', '', array_sum($totales)],
 ];
 
 // Columnas
@@ -174,19 +174,3 @@ $columnas[] = [
     </div>
 </section>
 <?php
-$js = <<<JS
-$(document).on('click', '.btn-item-estado', function (e) {
-    e.preventDefault();
-    var btn = $(this);
-    btn.prop('disabled', true);
-    $.post(btn.data('url'), {_csrf: yii.getCsrfToken()})
-        .done(function () {
-            $.pjax.reload({container: '#grilla-items', timeout: 5000});
-        })
-        .fail(function () {
-            alert('No se pudo cambiar el estado. Recargá la página e intentá de nuevo.');
-            btn.prop('disabled', false);
-        });
-});
-JS;
-$this->registerJs($js);

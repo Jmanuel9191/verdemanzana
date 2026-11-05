@@ -49,7 +49,6 @@ $puedeAgregar = $puedeModificar && ($cantidadInvitados < $limiteInvitados);
                             <?= $puedeModificar ? 'Ya alcanzaste el límite de invitados.' : 'Ya no es posible modificar la lista de invitados. Se cerró el plazo.' ?>
                         </div>
                     <?php endif; ?>
-                    <?= Html::a('<i class="fa fa-arrow-left"></i> Volver a la reserva', ['reservas/view', 'id' => $idreservas], ['class' => 'btn btn-default']) ?>
 
                 </div>
 
