@@ -163,8 +163,75 @@ class SiteController extends Controller
             Yii::$app->session->remove('user');
             return $this->redirect(['site/login']);
         }
-        $model = Organizadoras::findOne(['idorganizadora' => Yii::$app->user->id]);
-        return $this->render('organizadora/perfilorganizadora', ['model' => $model]);
+        $idOrganizadora = (int) Yii::$app->user->id;
+        $model = Organizadoras::findOne(['idorganizadora' => $idOrganizadora]);
+        $hoy = date('Y-m-d');
+
+        // ---------- COMISIONES (todas las reservas asignadas a esta organizadora) ----------
+        // Se muestran también las reservas inactivas (estado 0), marcadas como "Inactiva".
+        $filas = Reservas::find()
+            ->select(['idreservas', 'nombre', 'fecha_reserva', 'sucursal', 'estado', 'comision_organizadora'])
+            ->where(['idorganizadora' => $idOrganizadora])
+            ->orderBy(['fecha_reserva' => SORT_ASC])
+            ->asArray()
+            ->all();
+
+        $proximas = [];
+        $realizadas = [];
+        $anios = [];
+        foreach ($filas as $f) {
+            // La comisión se guarda como texto ("1500.00"). Vacía o no numérica = no cargada.
+            $texto = trim(str_replace(',', '.', (string) $f['comision_organizadora']));
+            $f['monto'] = is_numeric($texto) ? (float) $texto : null;
+            $f['finalizado'] = $f['fecha_reserva'] < $hoy;
+
+            if ($f['finalizado']) {
+                $anio = (int) substr($f['fecha_reserva'], 0, 4);
+                $anios[$anio] = $anio;
+                $realizadas[] = $f;
+            } else {
+                $proximas[] = $f;
+            }
+        }
+        $realizadas = array_reverse($realizadas);   // las más recientes primero
+        krsort($anios);
+
+        // Año elegido para "Realizadas" (por defecto el año del evento más reciente)
+        $anioElegido = (int) Yii::$app->request->get('anio', $anios ? reset($anios) : date('Y'));
+        $realizadasAnio = array_values(array_filter($realizadas, function ($f) use ($anioElegido) {
+            return (int) substr($f['fecha_reserva'], 0, 4) === $anioElegido;
+        }));
+
+        // ---------- EVENTOS DE TODOS (por salón, desde hoy, solo activos) ----------
+        // Campestre está cerrado: si vuelve a abrir, descomentar aquí y en la vista.
+        $salones = [
+            'Doble via a la guardia' => 'salondoblevia1.jpg',
+            'Garden'                 => 'salongarden1.jpg',
+            'Parque Urbano'          => 'salonparqueurbano1.jpg',
+            // 'Campestre'           => 'verdemanzana.jpg',
+        ];
+        $eventosPorSalon = array_fill_keys(array_keys($salones), []);
+        $proximosEventos = Reservas::find()
+            ->select(['idreservas', 'nombre', 'fecha_reserva', 'sucursal'])
+            ->where(['estado' => 1, 'sucursal' => array_keys($salones)])
+            ->andWhere(['>=', 'fecha_reserva', $hoy])
+            ->orderBy(['fecha_reserva' => SORT_ASC])
+            ->asArray()
+            ->all();
+        foreach ($proximosEventos as $e) {
+            $eventosPorSalon[$e['sucursal']][] = $e;
+        }
+
+        return $this->render('organizadora/perfilorganizadora', [
+            'model'           => $model,
+            'proximas'        => $proximas,
+            'realizadasAnio'  => $realizadasAnio,
+            'anios'           => $anios,
+            'anioElegido'     => $anioElegido,
+            'verRealizadas'   => Yii::$app->request->get('anio') !== null,
+            'salones'         => $salones,
+            'eventosPorSalon' => $eventosPorSalon,
+        ]);
     }
 
 
@@ -180,6 +247,7 @@ class SiteController extends Controller
         $model = \app\models\Reservas::find()
             ->where(['idreservas' => Yii::$app->user2->id])
             ->with([
+                'organizadora',
                 'galeriapresupuesto',
                 'galeriaequipamiento',
                 'galeriadecoracionus',
@@ -188,8 +256,17 @@ class SiteController extends Controller
                 'galeriacronograma',
             ])
             ->one();
+        if ($model === null) {
+            Yii::$app->user2->logout(false);
+            return $this->redirect(['site/logueo']);
+        }
 
-        return $this->render('reservas/perfilreserva', ['model' => $model]);
+        // Mismas pestañas que la ficha de la organizadora, en modo cliente:
+        // nunca ve comisiones; puede escribir observaciones, subir/borrar sus imágenes y cargar invitados.
+        $datos = self::datosFicha($model);
+        $datos['mostrarComision'] = false;
+
+        return $this->render('reservas/perfilreserva', ['model' => $model, 'esCliente' => true] + $datos);
     }
 
 
@@ -243,7 +320,8 @@ class SiteController extends Controller
             }
         }
 
-        return $this->redirect(Yii::$app->request->referrer ?: ['perfilreserva']);
+        // Vuelve a "Mis observaciones" (donde se ve el aviso de guardado)
+        return $this->redirect(['perfilreserva', '#' => 'mis-observaciones']);
     }
 
 
@@ -274,7 +352,7 @@ class SiteController extends Controller
 
     public function actionUpload2()
     {
-        return $this->subirImagenCliente(new ReservasGaleriadecoracion());
+        return $this->subirImagenCliente(new ReservasGaleriadecoracion(), 'reservasdecoracion');
     }
 
 
@@ -282,7 +360,7 @@ class SiteController extends Controller
 
      public function actionUpload3()
     {
-        return $this->subirImagenCliente(new ReservasGaleriacronograma());
+        return $this->subirImagenCliente(new ReservasGaleriacronograma(), 'reservascronograma');
     }
 
 
@@ -303,9 +381,11 @@ class SiteController extends Controller
      */
     public function actionLogout()
     {
-        $session = Yii::$app->session;
-        $session->remove('user');
-        return $this->goHome();
+        // Cierra la sesión de la organizadora (false = no destruye la sesión PHP
+        // completa, así no se cierra un admin o cliente abierto en el mismo navegador).
+        Yii::$app->user->logout(false);
+        Yii::$app->session->remove('user');
+        return $this->redirect(['site/login']);
     }
 
     /**
@@ -732,7 +812,7 @@ class SiteController extends Controller
     }
 
 
-     private function subirImagenCliente($model)
+     private function subirImagenCliente($model, string $carpeta = '')
     {
         $idreservas = (int)Yii::$app->request->post('id');
         $this->verificarAccesoReserva($idreservas);
@@ -757,7 +837,11 @@ class SiteController extends Controller
         if (!$model->save(false)) {
             return ['error' => 'No se pudo registrar la imagen.'];
         }
-        return [];
+        // Datos de la imagen nueva (la ficha del cliente la muestra sin recargar la página)
+        return [
+            'id'  => (int)$model->idgaleria,
+            'url' => Yii::getAlias('@web') . '/imagen/' . $carpeta . '/' . rawurlencode($model->archivo),
+        ];
     }
 
     /**
@@ -862,12 +946,123 @@ class SiteController extends Controller
             return $this->redirect(['site/login']);
         }
 
-        $model = Reservas::findOne(['idreservas' => $id]);
+        $model = Reservas::find()
+            ->where(['idreservas' => (int)$id])
+            ->with(['organizadora', 'galeriapresupuesto', 'galeriaequipamiento', 'galeriadecoracionus',
+                'galeriacoordinacion', 'galeriadecoracion', 'galeriacronograma'])
+            ->one();
         if ($model === null) {
             throw new \yii\web\NotFoundHttpException('La reserva no existe.');
         }
 
-        return $this->render('reservasint', ['model' => $model]);
+        return $this->render('reservasint', ['model' => $model] + self::datosFicha($model));
+    }
+
+    /**
+     * Datos de las pestañas de la ficha (Cotización, Facturación, Cronograma, Guía).
+     * Se arma aparte para reutilizarlo en la vista del cliente.
+     */
+    public static function datosFicha(Reservas $model): array
+    {
+        $id = (int)$model->idreservas;
+        $cotizacion = \app\models\ReservaCotizacion::deReserva($id);
+
+        return [
+            // null = reserva vieja (sin presupuesto por pasos)
+            'cotizacion'     => $cotizacion,
+            // Reserva vieja con Facturación: su saldo de arranque (null si no tiene)
+            'cuentaInicial'  => $cotizacion ? null : \app\models\ReservaCuentaInicial::deReserva($id),
+            // Solo pagos válidos: los anulados no se muestran fuera del admin
+            'pagos'          => \app\models\ReservaPago::find()
+                ->where(['idreservas' => $id, 'estado' => \app\models\ReservaPago::ESTADO_VALIDO])
+                ->orderBy(['fecha_pago' => SORT_ASC, 'idpago' => SORT_ASC])
+                ->all(),
+            'cronograma'     => \app\models\ReservaCronograma::deReserva($id),
+            'tieneGuia'      => self::reservaTieneGuia($id),
+            'mostrarComision' => self::puedeVerComision($model),
+        ];
+    }
+
+    /** La comisión solo la ve la organizadora asignada a ese evento. */
+    public static function puedeVerComision(Reservas $model): bool
+    {
+        return !Yii::$app->user->isGuest
+            && !empty(Yii::$app->session->get('user'))
+            && (int)$model->idorganizadora > 0
+            && (int)$model->idorganizadora === (int)Yii::$app->user->id;
+    }
+
+    /** ¿El cliente llenó algo en la guía (cronograma de boda / 15 años)? */
+    public static function reservaTieneGuia(int $idreservas): bool
+    {
+        // Fila con algún dato real (hora, proveedor, teléfono o descripción)
+        $conDatos = function ($t) {
+            return ['or',
+                ['and', ['not', [$t . 'hora_inicio' => null]], ['<>', $t . 'hora_inicio', '00:00:00']],
+                ['<>', $t . 'proveedor', ''],
+                ['<>', $t . 'telefono', ''],
+                ['<>', $t . 'descripcion', ''],
+            ];
+        };
+
+        $fijos = \app\models\DetalleCronograma::find()
+            ->alias('d')
+            ->innerJoin('cronograma_boda c', 'c.idcronograma = d.idcronograma')
+            ->where(['c.idreserva' => $idreservas])
+            ->andWhere($conDatos('d.'))
+            ->exists();
+
+        return $fijos || \app\models\DetalleCronogramaExtra::find()
+            ->where(['idreserva' => $idreservas])
+            ->andWhere($conDatos(''))
+            ->exists();
+    }
+
+    /**
+     * Comprobante de un pago (están en privado/, no se pueden abrir por URL directa).
+     * Lo ven la organizadora logueada o el cliente dueño de la reserva. Solo pagos válidos.
+     */
+    public function actionComprobantePago($idpago)
+    {
+        $pago = \app\models\ReservaPago::findOne([
+            'idpago' => (int)$idpago,
+            'estado' => \app\models\ReservaPago::ESTADO_VALIDO,
+        ]);
+        if ($pago === null) {
+            throw new \yii\web\NotFoundHttpException('No se encontró el comprobante.');
+        }
+        $this->verificarAccesoReserva($pago->idreservas);
+
+        $ruta = $pago->getRutaComprobante();
+        if ($ruta === null) {
+            throw new \yii\web\NotFoundHttpException('No se encontró el comprobante.');
+        }
+        $extension = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
+        Yii::$app->response->headers->set('X-Content-Type-Options', 'nosniff');
+        return Yii::$app->response->sendFile($ruta, 'comprobante_pago' . (int)$pago->idpago . '.' . $extension, [
+            'mimeType' => \yii\helpers\FileHelper::getMimeTypeByExtension($ruta) ?: 'application/octet-stream',
+            'inline'   => true,
+        ]);
+    }
+
+    /**
+     * PDF de la reserva (presupuesto, pagos, detalles, cronograma, completo).
+     * Organizadora logueada o cliente dueño. La comisión solo sale si es la organizadora del evento.
+     */
+    public function actionReservaPdf($id, $tipo = 'completo')
+    {
+        $this->verificarAccesoReserva($id);
+        $reserva = Reservas::findOne((int)$id);
+        if ($reserva === null) {
+            throw new \yii\web\NotFoundHttpException('La reserva no existe.');
+        }
+        [$contenido, $nombre] = \app\components\PdfReserva::generar($reserva, (string)$tipo, [
+            'mostrarComision' => self::puedeVerComision($reserva),
+        ]);
+        return Yii::$app->response->sendContentAsFile($contenido, $nombre, [
+            'mimeType' => 'application/pdf',
+            'inline'   => true,
+        ]);
     }
 
 

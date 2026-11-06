@@ -93,6 +93,18 @@ class PresupuestoForm extends Model
     /** @var array cambios detectados al guardar (para el mensaje de la pantalla) */
     public $cambios = [];
 
+    /**
+     * @var ReservaCuentaInicial|null  reserva VIEJA que se pasa al sistema nuevo:
+     * su saldo de arranque (total y lo cancelado antes). null = reserva normal.
+     */
+    public $cuentaInicial;
+
+    /** @var string|null lo cancelado antes del sistema (editable al pasar una reserva vieja) */
+    public $canceladoAnterior;
+
+    /** Nombre de la línea que trae los servicios adicionales de una reserva vieja. */
+    public const NOMBRE_SERVICIOS_ANTERIOR = 'Servicios adicionales (presupuesto anterior)';
+
     // ---------------------------------------------------------------- creación
 
     /** Formulario vacío para una reserva nueva. */
@@ -123,6 +135,76 @@ class PresupuestoForm extends Model
         $form->observacionesAntes = $cotizacion->observaciones;
         $form->totalAntes = $cotizacion->total;
         return $form;
+    }
+
+    /**
+     * Reserva VIEJA que se pasa al sistema nuevo ("Modificar presupuesto" por primera vez).
+     *  - el paquete se elige del catálogo (obligatorio); la cantidad arranca con los
+     *    invitados que ya tenía la reserva
+     *  - si tenía servicios adicionales, ya aparecen como una línea (se puede cambiar o quitar)
+     *  - lo cancelado antes y los pagos con comprobante se mantienen
+     */
+    public static function deReservaVieja(Reservas $reserva, ReservaCuentaInicial $cuenta): self
+    {
+        $form = new self();
+        $form->reserva = $reserva;
+        $form->cuentaInicial = $cuenta;
+        $form->cotizacion = new ReservaCotizacion();
+        $form->modo = self::MODO_PRESUPUESTO;
+        $form->totalAntes = $cuenta->getTotal();
+        $form->canceladoAnterior = $cuenta->getCanceladoInicial();
+
+        if (ReservaCotizacionDetalle::aCentavos($cuenta->total_servicios) > 0) {
+            $form->extras[] = self::lineaServiciosAnterior($cuenta->total_servicios);
+        }
+        return $form;
+    }
+
+    /**
+     * Reparte lo cancelado antes del sistema en la cuenta: primero el paquete y lo que
+     * sobra a servicios (así el saldo y el historial salen con el monto corregido).
+     */
+    private function aplicarCanceladoAnterior(): void
+    {
+        $n = \app\helpers\FormatoHelper::normalizarMonto($this->canceladoAnterior === '' ? '0' : $this->canceladoAnterior);
+        if (!is_numeric($n) || (float)$n < 0) {
+            return;   // validarPresupuesto() muestra el error
+        }
+        $c = $this->cuentaInicial;
+        $montoC = ReservaCotizacionDetalle::aCentavos($n);
+        $paqC = min($montoC, ReservaCotizacionDetalle::aCentavos($c->total_paquete));
+        $c->cancelado_paquete = ReservaCotizacionDetalle::deCentavos($paqC);
+        $c->cancelado_servicios = ReservaCotizacionDetalle::deCentavos($montoC - $paqC);
+    }
+
+    /** ¿Se está pasando una reserva vieja al sistema nuevo? */
+    public function esConversion(): bool
+    {
+        return $this->cuentaInicial !== null;
+    }
+
+    /** Línea "Servicios adicionales (presupuesto anterior)": no viene del catálogo. */
+    public static function lineaServiciosAnterior($monto): ReservaCotizacionDetalle
+    {
+        $l = new ReservaCotizacionDetalle();
+        $l->seccion = ReservaCotizacionDetalle::SECCION_ITEM;
+        $l->idorigen = null;
+        $l->nombre = self::NOMBRE_SERVICIOS_ANTERIOR;
+        $l->unidad = 'servicio';
+        $l->cantidad = 1;
+        $l->precio_unitario = (string)$monto;
+        $l->descuento_monto = 0;
+        $l->calcular();
+        return $l;
+    }
+
+    /** Lo ya pagado: en una conversión, lo cancelado antes + pagos con comprobante. */
+    public function getPagado(): string
+    {
+        if ($this->esConversion()) {
+            return $this->cuentaInicial->getTotalPagado();
+        }
+        return $this->cotizacion->isNewRecord ? '0' : $this->cotizacion->getTotalPagado();
     }
 
     public function attributeLabels()
@@ -179,6 +261,11 @@ class PresupuestoForm extends Model
         $this->motivo = isset($data['PresupuestoForm']['motivo'])
             ? trim((string)$data['PresupuestoForm']['motivo'])
             : null;
+
+        if ($this->esConversion() && isset($data['PresupuestoForm']['canceladoAnterior'])) {
+            $this->canceladoAnterior = trim((string)$data['PresupuestoForm']['canceladoAnterior']);
+            $this->aplicarCanceladoAnterior();
+        }
 
         $this->observaciones = isset($data['PresupuestoForm']['observaciones'])
             ? trim((string)$data['PresupuestoForm']['observaciones'])
@@ -241,6 +328,9 @@ class PresupuestoForm extends Model
                 // Línea que ya existía: se mantiene su copia y se actualizan los números
                 $linea = $guardados[$iddetalle];
                 unset($guardados[$iddetalle]);
+            } elseif (!empty($fila['anterior']) && $this->esConversion()) {
+                // Servicios adicionales de la reserva vieja (el nombre no se toma del formulario)
+                $linea = self::lineaServiciosAnterior($this->cuentaInicial->total_servicios);
             } else {
                 $item = Items::findOne((int)($fila['idorigen'] ?? 0));
                 if ($item === null) {
@@ -350,10 +440,17 @@ class PresupuestoForm extends Model
             }
         }
 
+        if ($this->esConversion()) {
+            $n = \app\helpers\FormatoHelper::normalizarMonto((string)$this->canceladoAnterior === '' ? '0' : (string)$this->canceladoAnterior);
+            if (!is_numeric($n) || (float)$n < 0) {
+                $this->addError('canceladoAnterior', 'Lo cancelado antes del sistema tiene que ser un monto válido (ej. 3.000 o 0).');
+            }
+        }
+
         // No se puede bajar el total por debajo de lo ya pagado
-        if (!$this->hasErrors() && !$this->cotizacion->isNewRecord) {
+        if (!$this->hasErrors() && (!$this->cotizacion->isNewRecord || $this->esConversion())) {
             $totalC = ReservaCotizacionDetalle::aCentavos($this->calcularTotal());
-            $pagadoC = ReservaCotizacionDetalle::aCentavos($this->cotizacion->getTotalPagado());
+            $pagadoC = ReservaCotizacionDetalle::aCentavos($this->getPagado());
             if ($totalC < $pagadoC) {
                 $this->addError('extras', 'El total del presupuesto no puede ser menor a lo ya pagado ('
                     . \app\helpers\FormatoHelper::formatoBs(ReservaCotizacionDetalle::deCentavos($pagadoC)) . ').');
@@ -478,8 +575,23 @@ class PresupuestoForm extends Model
                     }
                 }
 
+                // 3b) Reserva vieja que pasa al sistema nuevo: lo cancelado antes queda como
+                //     un pago "Registro anterior" (los pagos con comprobante ya están en reserva_pago)
+                if ($this->esConversion()) {
+                    if (!$this->cuentaInicial->save(false)) {
+                        throw new \RuntimeException('No se pudo guardar el presupuesto anterior.');
+                    }
+                    $this->convertirPagosAnteriores();
+                }
+
                 // 4) Historial: quién, cuándo, qué cambió, total anterior → nuevo
-                if ($esNueva) {
+                if ($this->esConversion()) {
+                    $motivo = 'Pasó del formulario anterior al sistema nuevo (presupuesto anterior: '
+                        . \app\helpers\FormatoHelper::formatoBs($this->totalAntes) . ').'
+                        . ($this->motivo ? ' ' . $this->motivo : '');
+                    ReservaCotizacionHistorial::registrar($c, ReservaCotizacionHistorial::ACCION_MODIFICADO,
+                        $this->totalAntes, $this->cambios, mb_substr($motivo, 0, 500));
+                } elseif ($esNueva) {
                     $this->cambios = ReservaCotizacionHistorial::comparar([], ReservaCotizacionHistorial::foto($this->todasLasLineas()));
                     ReservaCotizacionHistorial::registrar($c, ReservaCotizacionHistorial::ACCION_CREADO, null, $this->cambios, null);
                 } elseif (!empty($this->cambios)) {
@@ -515,6 +627,28 @@ class PresupuestoForm extends Model
         }
 
         return true;
+    }
+
+    /**
+     * Pasa lo cancelado antes del sistema a un pago "Registro anterior" y deja en 0 las
+     * columnas de servicios adicionales de reservas1 (ahora están dentro del presupuesto).
+     */
+    private function convertirPagosAnteriores(): void
+    {
+        $cuenta = $this->cuentaInicial;
+        $monto = $cuenta->getCanceladoInicial();
+        if (ReservaCotizacionDetalle::aCentavos($monto) > 0) {
+            $f = $this->reserva->fecha_registro ? substr((string)$this->reserva->fecha_registro, 0, 10) : '';
+            $fecha = preg_match('/^\d{4}-\d{2}-\d{2}$/', $f) && $f > '2000-01-01' ? $f : date('Y-m-d');
+            ReservaPago::crearAnterior((int)$this->reserva->idreservas, $monto, $fecha,
+                'Cancelado antes del sistema: paquete ' . \app\helpers\FormatoHelper::formatoBs($cuenta->cancelado_paquete)
+                . ' + servicios adicionales ' . \app\helpers\FormatoHelper::formatoBs($cuenta->cancelado_servicios) . '.');
+        }
+        $this->reserva->updateAttributes([
+            'servicios_adicionales' => '0',
+            'monto_cancelados'      => '0',
+            'saldo_pagars'          => '0',
+        ]);
     }
 
     /**

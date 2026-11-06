@@ -37,10 +37,12 @@ class PdfReserva
     ];
 
     /**
+     * @param array $opciones  'mostrarComision' => bool (por defecto true; false para la
+     *                         vista pública cuando no es la organizadora del evento o es el cliente)
      * @return array [contenido binario del PDF, nombre de archivo sugerido]
      * @throws NotFoundHttpException
      */
-    public static function generar(Reservas $reserva, string $tipo): array
+    public static function generar(Reservas $reserva, string $tipo, array $opciones = []): array
     {
         if (!isset(self::TIPOS[$tipo])) {
             throw new NotFoundHttpException('Tipo de PDF desconocido.');
@@ -69,6 +71,7 @@ class PdfReserva
                 ->all(),
             'cronograma'   => ReservaCronograma::deReserva($id),
             'invitados'    => (int)Invitados::find()->where(['idreservas' => $id])->count(),
+            'mostrarComision' => $opciones['mostrarComision'] ?? true,
         ];
 
         $html = Yii::$app->view->render('@app/views/pdf-reserva/documento', $datos);

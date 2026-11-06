@@ -116,15 +116,25 @@ $puedeAgregar = $puedeModificar && ($cantidadInvitados < $limiteInvitados);
     </div>
 
 <?php
-\yii\bootstrap\Modal::begin([
-    'id' => 'modal-invitado',
-    'size' => \yii\bootstrap\Modal::SIZE_LARGE,
-]);
-echo '<div id="modal-contenido-invitado"></div>';
-\yii\bootstrap\Modal::end();
-
-
+/*
+ * Ventana para agregar / editar invitado. Es HTML de Bootstrap 3 a mano (antes era
+ * \yii\bootstrap\Modal): el widget cargaba una SEGUNDA copia de bootstrap.js además
+ * de la del sitio (AppAsset) y con dos copias los menús desplegables se abrían y
+ * cerraban solos (ej. "Team Verde Manzana" en la ficha del evento).
+ */
 ?>
+<div id="modal-invitado" class="fade modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-contenido-invitado"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php
 $js = <<<JS

@@ -16,7 +16,7 @@ $script = <<<CSS
     
 CSS;
 //$this->registerCss($script, ['depends' => \app\assets\AppAsset::class]);
-\app\assets_b\AdminPropioAsset::register($this);   // AdminLTE + estiloadmin.css + adminjs.js
+\app\assets_b\AppAsset::register($this);   // estilos y JS del sitio público
 
 
 ?>
@@ -34,7 +34,6 @@ CSS;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="<?= \yii\helpers\Url::to('@web/assets_b/img/icon.png') ?>"/>
     <?php $this->head() ?>
-    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.7.2/css/all.css">
     
   <script type = 'text / javascript'> window.smartlook || (function (d) {var o = smartlook = function () {o.api.push (argumentos)}, h = d.getElementsByTagName ('head') [0]; var c = d.createElement ('script'); o.api = new Array (); c.async = true; c.type = 'text / javascript'; c.charset = 'utf-8' ; c.src = 'https: //rec.smartlook.com/recorder.js'; h.appendChild (c);}) (documento); smartlook ('init', '8d2836cb0061dd1a50dbbe35646aeec955a2efb3'); </script>
   
@@ -152,6 +151,38 @@ CSS;
                 }
 
 
+                // ---- Menús que cambian si la organizadora o el cliente iniciaron sesión ----
+                $plantillaDesplegable = '<a href="{url}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{label}</a>';
+                $plantillaSalir = '<a href="{url}" data-method="post">{label}</a>';
+
+                $organizadoraLogueada = !Yii::$app->user->isGuest && !empty(Yii::$app->session->get('user'));
+                $menuTeam = $organizadoraLogueada
+                    ? [
+                        'label' => 'Team Verde Manzana <span class="caret"></span>',
+                        'url' => '#',
+                        'options' => ['class' => 'dropdown'],
+                        'template' => $plantillaDesplegable,
+                        'items' => [
+                            ['label' => 'Mi perfil', 'url' => ['/site/perfilorganizadora']],
+                            ['label' => 'Cerrar sesión', 'url' => ['/site/logout'], 'template' => $plantillaSalir],
+                        ],
+                    ]
+                    : ['label' => 'Team Verde Manzana', 'url' => ['/site/perfilorganizadora'], 'options' => ['class' => '']];
+
+                $clienteLogueado = !Yii::$app->user2->isGuest;
+                $menuMiEvento = $clienteLogueado
+                    ? [
+                        'label' => 'Mi evento <span class="caret"></span>',
+                        'url' => '#',
+                        'options' => ['class' => 'dropdown'],
+                        'template' => $plantillaDesplegable,
+                        'items' => [
+                            ['label' => 'Ver mi evento', 'url' => ['/site/perfilreserva']],
+                            ['label' => 'Cerrar sesión', 'url' => ['/site/logout2'], 'template' => $plantillaSalir],
+                        ],
+                    ]
+                    : ['label' => 'Mi evento', 'url' => ['/site/perfilreserva'], 'options' => ['class' => '']];
+
                 echo Menu::widget([
                     'options' => ['class' => 'nav navbar-nav', 'id' => 'menu',],
                     'activeCssClass' => 'nav-selected',
@@ -182,10 +213,10 @@ CSS;
 
                         ['label' => '', 'url' => ['/site/index'], 'options' => ['class' => 'menu-separador hidden-xs'],],
 
-                         ['label' => 'Mi evento', 'url' => ['/site/perfilreserva'], 'options' => ['class' => ''],],
+                        $menuMiEvento,
                         ['label' => '', 'url' => ['/site/index'], 'options' => ['class' => 'menu-separador hidden-xs'],],
 
-                            ['label' => 'Team Verde Manzana', 'url' => ['/site/perfilorganizadora'], 'options' => ['class' => ''],],
+                        $menuTeam,
                         //['label' => 'Noticias', 'url' => ['/site/noticias'], 'options' => ['class' => ''],],
                        // ['label' => '', 'url' => ['/site/index'], 'options' => ['class' => 'menu-separador hidden-xs'],],
                        // ['label' => 'Reservas', 'url' => ['/site/reservas'], 'options' => ['class' => ''],],

@@ -15,6 +15,7 @@ use yii\helpers\Html;
 /* @var $pagos app\models\ReservaPago[] */
 /* @var $cronograma app\models\ReservaCronograma */
 /* @var $invitados int */
+/* @var $mostrarComision bool */
 
 $nombreEmpresa = $empresa && trim((string)$empresa->nombre_empresa) !== '' ? $empresa->nombre_empresa : 'Verde Manzana';
 $evento = PdfReserva::nombreEvento($reserva);
@@ -103,6 +104,7 @@ $evento = PdfReserva::nombreEvento($reserva);
         'cronograma'  => $cronograma,
         'invitados'   => $invitados,
         'completo'    => count($secciones) > 1,
+        'mostrarComision' => $mostrarComision ?? true,
     ]) ?>
 <?php endforeach; ?>
 

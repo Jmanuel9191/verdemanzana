@@ -1,0 +1,267 @@
+/* Ficha del evento (/reserva?id=X) y, más adelante, la vista del cliente.
+   Se carga desde views/site/reservas/item.php. */
+
+.vm-ficha { padding-top: 35px; padding-bottom: 50px; }
+
+/* Encabezado estilo "Wedding timeline" */
+.vm-ficha-cabecera { margin-bottom: 28px; }
+.vm-ficha-cabecera h1 {
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 400;
+    font-size: 34px;
+    color: #222;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin: 0 0 18px;
+}
+.vm-ficha-cabecera h2 {
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: #222;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+}
+.vm-ficha-linea {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 18px;
+    color: #555;
+    margin: 0 0 8px;
+}
+.vm-ficha-linea b { font-weight: normal; color: #999; margin: 0 4px; }
+.vm-ir-invitados, .vm-ir-invitados:hover { color: #555; text-decoration: underline; }
+
+/* --- Pestañas --- */
+.vm-tabs { border-bottom: 2px solid #6ba622; }
+.vm-tabs > li > a {
+    /* .nav > li > a del sitio usa la letra Fester (sin Ó mayúscula) y margin-top: 30px */
+    font-family: inherit;
+    margin-top: 0;
+    text-transform: none;
+    color: #527f1a;
+    font-weight: 600;
+    font-size: 15px;
+    border-radius: 4px 4px 0 0;
+    margin-right: 4px;
+}
+.vm-tabs > li > a:hover { background: #f2f8ea; border-color: transparent; }
+/* style.css pone color con !important en .nav-tabs: acá se pisa a propósito */
+.vm-ficha .nav-tabs.vm-tabs > li.active > a,
+.vm-ficha .nav-tabs.vm-tabs > li.active > a:hover,
+.vm-ficha .nav-tabs.vm-tabs > li.active > a:focus {
+    color: #fff !important;
+    background: #6ba622;
+    border-color: #6ba622;
+}
+.vm-tab-content { padding-top: 25px; }
+
+/* --- Bloques --- */
+.vm-bloque { margin-bottom: 35px; }
+.vm-bloque-titulo {
+    color: #527f1a;
+    font-size: 21px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid #d2d2d2;
+    padding-bottom: 8px;
+    margin: 0 0 18px;
+    line-height: 34px;
+}
+.vm-subtitulo {
+    color: #527f1a;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 22px 0 10px;
+}
+
+/* Dato con etiqueta chica arriba */
+.vm-datos > div { margin-bottom: 14px; font-size: 15px; }
+.vm-datos small,
+.vm-etq-campo {
+    display: block;
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    margin-bottom: 2px;
+}
+.vm-html p { margin-bottom: 4px; }
+.vm-html ul, .vm-html ol { padding-left: 20px; margin-bottom: 4px; }
+
+.vm-guion, .vm-gris { color: #9e9e9e; }
+.vm-nowrap { white-space: nowrap; }
+.vm-vacio { color: #9e9e9e; font-style: italic; margin: 6px 0 12px; }
+
+.vm-nota {
+    background: #f9f9f9;
+    border-left: 3px solid #d2d2d2;
+    padding: 10px 14px;
+    margin-bottom: 15px;
+}
+
+/* --- Botones --- */
+.vm-descargas { margin-bottom: 20px; }
+.vm-descargas > span { color: #888; margin-right: 6px; }
+.vm-descargas .btn { margin: 0 4px 6px 0; }
+.vm-btn-pdf, .vm-btn-pdf:focus { background: #c0392b; color: #fff; border: 0; font-size: 13px; }
+.vm-btn-pdf:hover { background: #a93226; color: #fff; }
+.vm-btn-borde, .vm-btn-borde:focus { background: #fff; color: #527f1a; border: 1px solid #6ba622; font-size: 13px; }
+.vm-btn-borde:hover { background: #6ba622; color: #fff; }
+
+/* --- Etiquetas --- */
+.vm-etiqueta {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+.vm-etq-paquete { background: #6ba622; color: #fff; }
+.vm-etq-item { background: #d9edf7; color: #31708f; }
+.vm-etq-proveedor { background: #fcf0d9; color: #8a6d3b; }
+.vm-etiqueta-gris { background: #eee; color: #777; }
+
+/* --- Tabla del presupuesto --- */
+.vm-tabla { font-size: 14px; }
+.vm-tabla > thead > tr > th { border-bottom: 2px solid #6ba622; color: #527f1a; }
+.vm-tabla > tbody > tr > td { vertical-align: middle; }
+
+.vm-totales { font-size: 15px; }
+.vm-totales th { font-weight: normal; color: #666; }
+.vm-totales td { text-align: right; white-space: nowrap; }
+.vm-totales .vm-fila-total th,
+.vm-totales .vm-fila-total td { font-weight: 700; color: #333; font-size: 17px; border-top: 2px solid #6ba622; }
+.vm-totales .vm-fila-saldo th,
+.vm-totales .vm-fila-saldo td { font-weight: 700; color: #c0392b; }
+
+/* --- Galerías (miniaturas con popup) --- */
+.vm-galeria { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.vm-galeria .vm-zoom {
+    display: block;
+    width: 100px;
+    height: 100px;
+    border: 1px solid #6ba622;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: zoom-in;
+}
+.vm-galeria .vm-zoom img { width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+.vm-galeria .vm-zoom:hover img { transform: scale(1.08); }
+
+/* --- Observaciones del cliente --- */
+.vm-tarjeta {
+    background: #fbfdf8;
+    border: 1px solid #e3eed5;
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    min-height: 200px;
+}
+.vm-tarjeta h3 { color: #527f1a; font-size: 17px; font-weight: 600; margin: 0 0 12px; }
+.vm-cita {
+    background: #fff;
+    border-left: 4px solid #6ba622;
+    padding: 10px 14px;
+    margin-bottom: 15px;
+    font-size: 15px;
+}
+
+/* --- Facturación --- */
+.vm-cuentas > div { margin-bottom: 12px; }
+.vm-cuenta {
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 14px 18px;
+    border-left: 4px solid #9e9e9e;
+}
+.vm-cuenta span { display: block; color: #777; font-size: 13px; text-transform: uppercase; }
+.vm-cuenta strong { font-size: 24px; color: #333; }
+.vm-cuenta-verde { background: #f2f8ea; border-left-color: #6ba622; }
+.vm-cuenta-verde strong { color: #527f1a; }
+.vm-cuenta-saldo { background: #fdf2f1; border-left-color: #c0392b; }
+.vm-cuenta-saldo strong { color: #c0392b; }
+.vm-cuenta-chica { padding: 10px 14px; }
+.vm-cuenta-chica strong { font-size: 18px; }
+
+.vm-pagos { display: block; }
+.vm-pago {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: #fff;
+}
+.vm-pago-comprobante { flex: 0 0 110px; margin-right: 16px; text-align: center; }
+.vm-pago-comprobante .vm-zoom { width: 110px; height: 110px; }
+.vm-pago-pdf, .vm-pago-sin {
+    display: block;
+    width: 110px;
+    height: 110px;
+    border-radius: 4px;
+    padding-top: 28px;
+    font-size: 13px;
+}
+.vm-pago-pdf { border: 1px solid #c0392b; color: #c0392b; }
+.vm-pago-pdf:hover { background: #fdf2f1; color: #a93226; text-decoration: none; }
+.vm-pago-pdf i, .vm-pago-sin i { font-size: 30px; margin-bottom: 4px; }
+.vm-pago-sin { border: 1px dashed #ccc; color: #aaa; }
+.vm-pago-datos span, .vm-pago-datos small { display: block; margin-bottom: 3px; }
+.vm-pago-datos i { color: #6ba622; width: 18px; }
+.vm-pago-numero { color: #888; font-size: 12px; text-transform: uppercase; }
+.vm-pago-monto { display: block; font-size: 20px; color: #527f1a; margin-bottom: 4px; }
+
+/* --- Cronograma pegado desde Word --- */
+.vm-cronograma { overflow-x: auto; font-size: 14px; }
+.vm-cronograma table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+.vm-cronograma td, .vm-cronograma th { padding: 6px 8px; vertical-align: top; }
+.vm-cronograma table[border] td,
+.vm-cronograma table[border] th { border: 1px solid #ccc; }
+.vm-cronograma p { margin-bottom: 6px; }
+
+@media (max-width: 767px) {
+    .vm-tabs > li { float: none; }
+    .vm-tabs > li > a { margin-right: 0; }
+    .vm-bloque-titulo .pull-right { float: none !important; display: inline-block; margin-top: 6px; }
+    .vm-pago-comprobante { flex-basis: 90px; }
+    .vm-pago-comprobante .vm-zoom, .vm-pago-pdf, .vm-pago-sin { width: 90px; height: 90px; }
+}
+
+/* --- Vista del cliente: "Mis observaciones" --- */
+.vm-tarjeta-cliente { min-height: 0; }
+.vm-textarea { margin-bottom: 14px; font-size: 15px; resize: vertical; }
+.vm-subida-cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.vm-subida-cab .vm-etq-campo { margin: 0; }
+.vm-btn-subir { margin: 0; cursor: pointer; }
+.vm-subida-estado { display: none; font-size: 13px; margin-bottom: 8px; color: #527f1a; }
+.vm-subida-estado.vm-subiendo { color: #8a6d3b; }
+.vm-subida-estado.vm-aviso-error { color: #c0392b; }
+.vm-miniatura { position: relative; }
+.vm-miniatura.vm-borrando { opacity: .4; pointer-events: none; }
+.vm-borrar-img {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 0;
+    background: #c0392b;
+    color: #fff;
+    font-size: 16px;
+    line-height: 22px;
+    padding: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+}
+.vm-borrar-img:hover { background: #a93226; }
+.vm-btn-guardar, .vm-btn-guardar:focus { background: #6ba622; color: #fff; border: 0; padding: 10px 28px; font-size: 16px; }
+.vm-btn-guardar:hover { background: #527f1a; color: #fff; }
+.vm-aviso { padding: 10px 14px; border-radius: 4px; margin-bottom: 15px; }
+.vm-aviso-ok { background: #f2f8ea; border-left: 4px solid #6ba622; color: #3c5f12; }
+.vm-aviso-error { background: #fdf2f1; border-left: 4px solid #c0392b; color: #a93226; }
+.vm-link-wa, .vm-link-wa:hover { color: #25a244; }
+.vm-btn-subir .vm-input-subir { display: none !important; }

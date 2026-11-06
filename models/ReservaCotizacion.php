@@ -121,6 +121,12 @@ class ReservaCotizacion extends ActiveRecord
         $this->total = ReservaCotizacionDetalle::deCentavos($subtotalC - $descuentoC);
     }
 
+    /** Total del presupuesto (mismo nombre que ReservaCuentaInicial::getTotal). */
+    public function getTotal(): string
+    {
+        return (string)$this->total;
+    }
+
     /** Cancelado a la fecha: suma de pagos válidos de la reserva. */
     public function getTotalPagado(): string
     {

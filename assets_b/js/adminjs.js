@@ -121,6 +121,33 @@ function cambiarEstado(url) {
         if (e.key === 'Enter') { e.preventDefault(); }
     });
 
+    /* ---------- Reserva vieja · saldo de arranque: totales en vivo ---------- */
+    $(function () {
+        if (!$('#form-saldo-inicial').length) { return; }
+        var siNum = function (v) {
+            v = String(v || '').replace(/\s/g, '');
+            if (/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(v)) { v = v.replace(/\./g, '').replace(',', '.'); }
+            else if (/^\d{1,3}(,\d{3})+(\.\d{1,2})?$/.test(v)) { v = v.replace(/,/g, ''); }
+            else { v = v.replace(',', '.'); }
+            var n = parseFloat(v);
+            return isNaN(n) ? 0 : n;
+        };
+        var siBs = function (n) {
+            return 'Bs ' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        };
+        var siCalcular = function () {
+            var f = function (c) { return siNum($('#reservacuentainicial-' + c).val()); };
+            var total = f('total_paquete') + f('total_servicios');
+            var cancelado = f('cancelado_paquete') + f('cancelado_servicios');
+            var pagado = parseFloat($('#si-saldo').data('pagado')) || 0;
+            $('#si-total').text(siBs(total));
+            $('#si-cancelado').text(siBs(cancelado));
+            $('#si-saldo').html('<b>' + siBs(total - cancelado - pagado) + '</b>');
+        };
+        $(document).on('input', '#form-saldo-inicial .monto-saldo', siCalcular);
+        siCalcular();
+    });
+
     /* ---------- Reserva por pasos · pagos ---------- */
     $(document).on('click', '#btn-nuevo-pago', function () {
         $('#panel-nuevo-pago').slideDown(150, function () { $('#reservapago-monto').focus(); });
@@ -222,6 +249,12 @@ function cambiarEstado(url) {
             $('#tot-saldo').text('Bs ' + bs(tot - pagadoC));
             $('#res-total').text('Bs ' + bs(tot));
             $('#res-saldo').text('Bs ' + bs(tot - pagadoC));
+            // Reserva vieja que pasa al sistema nuevo: diferencia con el presupuesto anterior
+            if (D.totalAnterior !== null && D.totalAnterior !== undefined) {
+                var difC = tot - Math.round(D.totalAnterior * 100);
+                $('#tot-diferencia').text((difC >= 0 ? '+ ' : '− ') + 'Bs ' + bs(Math.abs(difC)))
+                    .toggleClass('text-danger', difC < 0).toggleClass('text-success', difC > 0);
+            }
         }
 
         // ---- eventos de edición (delegados: sirven también para filas nuevas)
@@ -248,7 +281,8 @@ function cambiarEstado(url) {
                 return;
             }
             if (cargarValores) {
-                fila.find('.campo-cantidad').val(p.invitados ? p.invitados : 1);
+                // Reserva vieja: se mantienen los invitados que ya tenía; si no, los del paquete
+                fila.find('.campo-cantidad').val(D.invitadosAnteriores ? D.invitadosAnteriores : (p.invitados ? p.invitados : 1));
                 fila.find('.campo-precio').val(bs(Math.round(parse(p.precio) * 100)));
                 fila.find('.campo-pct').val('0');
             }
@@ -264,6 +298,14 @@ function cambiarEstado(url) {
             calcularFila(fila, cargarValores ? 'pct' : 'desc');
         }
         $('#sel-paquete').on('change', function () { mostrarPaquete($(this).val(), true); });
+
+        // Reserva vieja: lo cancelado antes del sistema se puede corregir → recalcula cancelado y saldo
+        $('#cancelado-anterior').on('input', function () {
+            D.pagado = parse($(this).val()) + (D.pagosNuevos || 0);
+            $('#res-pagado').text('Bs ' + bs(Math.round(D.pagado * 100)));
+            $('#tot-cancelado').text('Bs ' + bs(Math.round(D.pagado * 100)));
+            calcularTotales();
+        }).on('blur', function () { $(this).val(bs(Math.round(parse($(this).val()) * 100))); });
         $('.fila-paquete').on('input', '.campo-cantidad', function () {
             var n = parse($(this).val());
             $('#res-invitados').text(n ? cantTxt(n) + ' invitados' : '');

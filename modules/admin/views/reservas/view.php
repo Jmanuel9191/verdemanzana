@@ -39,6 +39,9 @@ $linkArchivo = function ($archivo, $texto) {
     return '<span style="color: red;">No se cargó ningún archivo</span>';
 };
 
+// Guía del cliente: "VER GUIA" y "Añadir u Ordenar Campos" solo si tiene algo cargado
+$tieneGuia = \app\controllers\SiteController::reservaTieneGuia((int)$model->idreservas);
+
 $urlmans = ($model->tipoevento == 'matrimonio')
     ? ['form-campos-extra', 'idreserva' => $model->idreservas]
     : ['form-campos-extra-quince', 'idreserva' => $model->idreservas];
@@ -59,17 +62,24 @@ $urlmans = ($model->tipoevento == 'matrimonio')
                 <div class="box-header">
                     <?= Html::a('Cambiar Contraseña', ['update2' , 'id' => $model->idreservas], ['class' => 'btn btn-primary']) ?>
                     <?= Html::a('Editar datos generales', ['update', 'id' => $model->idreservas], ['class' => 'btn btn-secondary']) ?>
+                    <?= Html::a('<i class="fa fa-money"></i> Facturación / Pagos', ['reserva-pasos/pagos', 'id' => $model->idreservas], ['class' => 'btn btn-success']) ?>
+                    <?= Html::a('<i class="fa fa-pencil"></i> Modificar presupuesto', ['reserva-pasos/modificar-presupuesto', 'id' => $model->idreservas], [
+                        'class' => 'btn btn-warning',
+                        'title' => 'Elegir paquete y agregar ítems/proveedores. Al guardar, la reserva pasa al sistema nuevo.',
+                    ]) ?>
 
                     <?= Html::a($texto, $url, ['class' => 'btn btn-secondary']) ?>
 
 
                     <?= Html::a('Lista de invitados', ['invitados', 'idreservas' => $model->idreservas], ['class' => 'btn btn-primary']) ?>
+                    <?php if ($tieneGuia): ?>
                     <?= Html::a('VER GUIA(anterior)', ['viewguia', 'id' => $model->idreservas], ['class' => 'btn btn-primary']) ?>
 
 
                     <?= Html::a('➕ Añadir u Ordenar Campos', $urlmans, [
                         'class' => 'btn btn-secondary'
                     ]) ?>
+                    <?php endif; ?>
 
                     <?= Html::a('Borrar', ['delete', 'id' => $model->idreservas], [
                         'class' => 'btn btn-danger',

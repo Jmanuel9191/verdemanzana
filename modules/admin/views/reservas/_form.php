@@ -40,22 +40,37 @@ array_push($initial3, Html::img('@web/imagen/usuarios/' . $model->presupuestofil
             ]
         ]); ?>
 
+    <?php
+    // Si la reserva ya tiene Facturación (saldo de arranque), los montos se manejan desde ahí
+    $conFacturacion = !$model->isNewRecord
+        && \app\models\ReservaCuentaInicial::find()->where(['idreservas' => (int)$model->idreservas])->exists();
+    $opMonto = $conFacturacion ? ['maxlength' => true, 'readonly' => true] : ['maxlength' => true];
+    ?>
     <div class="row">
         <div class="col-xs-12">
+            <?php if ($conFacturacion): ?>
+                <div class="col-xs-12">
+                    <div class="alert alert-info" style="margin-top:10px">
+                        <i class="fa fa-info-circle"></i> Los montos de esta reserva se manejan desde
+                        <?= Html::a('<b>Facturación / Pagos</b>', ['reserva-pasos/pagos', 'id' => $model->idreservas]) ?>:
+                        acá solo se muestran.
+                    </div>
+                </div>
+            <?php endif; ?>
             <div class="col-lg-6 col-xs-12 labelso">
                 <h3 class="coloh3">Presupuesto</h3>
 
-                <?= $form->field($model, 'presupuesto')->textInput(['maxlength' => true]) ?>
-                <?= $form->field($model, 'monto_canceladop')->textInput(['maxlength' => true]) ?>
-                <?= $form->field($model, 'saldo_pagarp')->textInput(['maxlength' => true]) ?>
+                <?= $form->field($model, 'presupuesto')->textInput($opMonto) ?>
+                <?= $form->field($model, 'monto_canceladop')->textInput($opMonto) ?>
+                <?= $form->field($model, 'saldo_pagarp')->textInput($opMonto) ?>
 
             </div>
             <div class="col-lg-6 col-xs-12 labelso">
                 <h3 class="coloh3">Servicios adicionales</h3>
 
-                <?= $form->field($model, 'servicios_adicionales')->textInput(['maxlength' => true]) ?>
-                <?= $form->field($model, 'monto_cancelados')->textInput(['maxlength' => true]) ?>
-                <?= $form->field($model, 'saldo_pagars')->textInput(['maxlength' => true]) ?>
+                <?= $form->field($model, 'servicios_adicionales')->textInput($opMonto) ?>
+                <?= $form->field($model, 'monto_cancelados')->textInput($opMonto) ?>
+                <?= $form->field($model, 'saldo_pagars')->textInput($opMonto) ?>
 
             </div>
 

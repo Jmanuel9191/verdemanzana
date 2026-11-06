@@ -1803,3 +1803,6 @@ margin-top: 0;
     font-size: 17px;
     padding-left: 0;
 }
+/* --- Menú desplegable (organizadora / cliente logueados) --- */
+#menu .dropdown-menu { border-top: 3px solid #6ba622; min-width: 180px; }
+#menu .dropdown-menu > li > a { padding: 8px 18px; }

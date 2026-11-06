@@ -1,0 +1,87 @@
+/* Perfil de la organizadora (/perfilorganizadora)
+   Se carga solo en esa vista (registerCssFile en perfilorganizadora.php). */
+
+.po-perfil { padding-top: 50px; padding-bottom: 40px; }
+
+.po-titulo {
+    color: #527f1a;
+    font-size: 30px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 30px 0 25px;
+}
+
+/* --- Totales arriba --- */
+.po-resumen { margin-bottom: 20px; }
+.po-caja-total {
+    background: #f2f8ea;
+    border-left: 4px solid #6ba622;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+}
+.po-caja-total span { display: block; color: #666; font-size: 14px; }
+.po-caja-total strong { font-size: 24px; color: #527f1a; }
+.po-caja-total-gris { background: #f5f5f5; border-left-color: #9e9e9e; }
+.po-caja-total-gris strong { color: #555; }
+
+/* --- Pestañas --- */
+.po-tabs > li > a { color: #527f1a; font-weight: 600; }
+.po-tabs > li.active > a,
+.po-tabs > li.active > a:hover,
+.po-tabs > li.active > a:focus { color: #333; }
+.po-tab-content { padding-top: 15px; }
+
+.po-anio { margin-bottom: 12px; }
+.po-anio label { margin-right: 6px; }
+
+/* --- Tabla de comisiones --- */
+.po-tabla { font-size: 15px; }
+.po-tabla > thead > tr > th { border-bottom: 2px solid #6ba622; color: #527f1a; }
+.po-tabla > tbody > tr > td { vertical-align: middle; }
+.po-tabla > tfoot > tr > td { border-top: 2px solid #d2d2d2; font-size: 17px; }
+.po-nowrap { white-space: nowrap; }
+
+.po-etiqueta {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+.po-etiqueta-fin { background: #eee; color: #666; }
+.po-etiqueta-inactiva { background: #fbe3e4; color: #b94a48; }
+.po-inactiva td { color: #999; }
+
+.po-no-cargada { color: #9e9e9e; font-style: italic; }
+.po-vacio { color: #9e9e9e; }
+
+.po-btn,
+.po-btn:focus { background: #6ba622; color: #fff; border: 0; }
+.po-btn:hover { background: #527f1a; color: #fff; }
+
+/* --- Eventos por salón --- */
+.po-salon { margin-bottom: 40px; }
+.po-salon-nombre {
+    color: #527f1a;
+    font-size: 17px;
+    font-weight: 600;
+    text-align: center;
+}
+.po-salon img { margin-bottom: 15px; }
+.po-evento { border-bottom: 1px solid #d2d2d2; padding: 10px 0; }
+.po-evento p { font-size: 16px; margin-bottom: 5px; }
+.po-link, .po-link:hover { color: #669f20; text-decoration: underline; }
+
+/* Calendario (bootstrap-datepicker inline) */
+.po-calendario .datepicker-inline { width: 100%; margin-bottom: 20px; }
+.po-calendario .datepicker { padding: 20px 15px; border-radius: 4px; direction: ltr; }
+.po-calendario .datepicker table { width: 100%; }
+.po-calendario .datepicker table tr td,
+.po-calendario .datepicker table tr th {
+    text-align: center;
+    height: 30px;
+    border-radius: 4px;
+    border: none;
+}
+.po-calendario .datepicker table tr td.active.active { background-color: #6ba622; border-color: #6ba622; }

@@ -60,6 +60,11 @@ $galeria = function ($imagenes, $carpeta) {
 };
 
 $organizadora = $reserva->idorganizadora ? $reserva->organizadora : null;
+// Guía del cliente (formulario anterior): los botones salen solo si tiene algo cargado
+$tieneGuia = \app\controllers\SiteController::reservaTieneGuia($id);
+$urlCampos = $reserva->tipoevento === 'matrimonio'
+    ? ['reservas/form-campos-extra', 'idreserva' => $id]
+    : ['reservas/form-campos-extra-quince', 'idreserva' => $id];
 $comision = trim((string)$reserva->comision_organizadora);
 $comisionTxt = $comision === '' ? '' : (is_numeric($comision) ? FormatoHelper::formatoBs($comision) : $comision);
 $fechaHora = function ($v) {
@@ -105,7 +110,10 @@ $fechaHora = function ($v) {
             <?= $boton('', 'Detalles', ['detalles', 'id' => $id], 'success') ?>
             <?= $boton('', 'Cronograma', ['cronograma', 'id' => $id], 'success') ?>
             <?= $boton('', 'Lista de invitados (' . $invitados . ($limite ? '/' . $limite : '') . ')', ['reservas/invitados', 'idreservas' => $id], 'info') ?>
-            <?= $boton('', 'Guía del cliente', ['reservas/viewguia', 'id' => $id]) ?>
+            <?php if ($tieneGuia): ?>
+                <?= $boton('', 'Guía del cliente', ['reservas/viewguia', 'id' => $id]) ?>
+                <?= $boton('', 'Añadir u Ordenar Campos', $urlCampos) ?>
+            <?php endif; ?>
             <?= $boton('', 'Cambiar contraseña', ['contrasena', 'id' => $id], 'danger') ?>
             <?= Html::a(' PDF completo', ['pdf', 'id' => $id, 'tipo' => 'completo'],
                 ['class' => 'btn btn-danger btn-sm', 'target' => '_blank', 'title' => 'Todo junto: presupuesto, estado de cuenta, detalles y cronograma']) ?>

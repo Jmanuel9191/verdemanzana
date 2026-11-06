@@ -116,12 +116,22 @@ $puedeAgregar = $puedeModificar && ($cantidadInvitados < $limiteInvitados);
     </div>
 
 <?php
-\yii\bootstrap\Modal::begin([
-    'id' => 'modal-invitado',
-    'size' => \yii\bootstrap\Modal::SIZE_LARGE,
-]);
-echo '<div id="modal-contenido-invitado"></div>';
-\yii\bootstrap\Modal::end();
+// Ventana hecha con HTML de Bootstrap 3 (antes \yii\bootstrap\Modal, que cargaba una
+// segunda copia de bootstrap.js y rompía los menús desplegables del sitio).
+?>
+<div id="modal-invitado" class="fade modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-contenido-invitado"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php
 
 
 ?>

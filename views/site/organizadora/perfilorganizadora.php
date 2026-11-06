@@ -1,666 +1,220 @@
 <?php
+/**
+ * Perfil de la organizadora (/perfilorganizadora).
+ * Los datos vienen de SiteController::actionPerfilorganizadora().
+ *
+ * @var $this            yii\web\View
+ * @var $model           app\models\Organizadoras
+ * @var $proximas        array  comisiones de eventos de hoy en adelante
+ * @var $realizadasAnio  array  comisiones de eventos pasados del año elegido
+ * @var $anios           array  años con eventos pasados (para el selector)
+ * @var $anioElegido     int
+ * @var $verRealizadas   bool   abrir directamente la pestaña "Realizadas"
+ * @var $salones         array  nombre del salón => imagen
+ * @var $eventosPorSalon array  nombre del salón => eventos próximos (de todas las organizadoras)
+ */
+
+use app\assets_b\AppAsset;
+use yii\helpers\Html;
+use yii\helpers\Json;
 use yii\helpers\Url;
 
-$cat="";
+$this->title = 'Mi perfil - Organizadora';
 
+$this->registerCssFile('@web/assets_b/css/plugins.css', ['depends' => AppAsset::class]);
+$this->registerCssFile('@web/assets_b/css/perfil-organizadora.css', ['depends' => AppAsset::class]);
 
-@$nombre = $_GET['cat'];
+// "25 de Noviembre, 2026"
+$fechaLarga = function ($fecha) {
+    $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+        'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    $t = strtotime($fecha);
+    return date('d', $t) . ' de ' . $meses[(int) date('m', $t)] . ', ' . date('Y', $t);
+};
 
+// "Bs 1.500,00" (formato Bolivia)
+$bs = function ($monto) {
+    return 'Bs ' . number_format((float) $monto, 2, ',', '.');
+};
 
-$categorias5 = \app\models\Categoria::findOne(['idcategoria' => $nombre]);
-
-$script = <<<CSS
-.view {
-    width: 100%}
-
-.tit_acor{
-    color: #527f1a;
-    font-size: 17px;
-    font-weight: 600;
-    text-align: center;
-    display:block;
-}
-
-
-.datepicker {
-    padding: 20px 15px 40px 15px;
-    border-radius: 4px;
-    direction: ltr
-}
-
-.datepicker-inline {
-    width: 100%;
-    margin-bottom: 40px;
-}
-
-.calendar-inicio-head{
-    background-color: #f37d89;
-    color: #ffffff;
-    font: 700 25px / 26px OpenSans;
-    padding: 45px 30px;
-    width: 350px;
-    margin: 0 auto;
-    height: 240px;
-}
-
-
-
-
-hr {
-  
-    border-top: 1px solid #d2d2d2;
-}
-
-.datepicker table tr td, .datepicker table tr th {
-    text-align: center;
-    width: 40px;
-    height: 30px;
-    border-radius: 4px;
-    border: none;
-}
-
-@media  (min-width: 992px) and (max-width: 1199px) {
-
-
-
- .calendar-inicio-head{
-
-    width: 300px!important;
-
+$sumar = function (array $filas) {
+    $total = 0;
+    foreach ($filas as $f) {
+        $total += (float) $f['monto'];
     }
+    return $total;
+};
 
-    .datepicker-inline {
-    width: 100%!important;
+$totalProximas = $sumar($proximas);
+$totalRealizadas = $sumar($realizadasAnio);
+$nombreOrg = $model ? $model->nombre : '';
+
+/**
+ * Dibuja la tabla de comisiones (se usa en las dos pestañas).
+ */
+$tablaComisiones = function (array $filas, $total, $textoVacio) use ($fechaLarga, $bs) {
+    if (!$filas) {
+        return '<p class="po-vacio">' . Html::encode($textoVacio) . '</p>';
     }
-
-
-    .datepicker {
-    padding: 20px 15px 40px 15px!important;
-        border-radius: 4px;
-        direction: ltr
-    }
-}
-@media  (max-width: 767px) {
-
-
-    .calendar-inicio-head{
-
-    width: 280px!important;
-
-    }
-
-    .datepicker-inline {
-    width: 100%!important;
-    }
-
-
-    .datepicker {
-    padding: 4px 15px!important;
-        border-radius: 4px;
-        direction: ltr
-    }
-  }
-
-
-.datepicker table tr td.active.active {background-color: #6ba622;
-    border-color: #6ba622;
-
-}
-
-.dededered p,
-.dededered a
-{
-    font-size: 14px;
-}
-
-.comi{
-    color: #527f1a;
-    font-size: 17px;
-    font-weight: 600;
-    text-align: left;
-    display: block;
-    font-size: 30px;
-}
-
-.caja p{font-size: 16px; margin-bottom: 5px; }
-.caja .col-sm-6.col-xs-12{ border-bottom:  1px solid #d2d2d2; margin-bottom: 25px; }
-CSS;
-$this->registerCssFile('@web/assets_b/css/plugins.css', ['media' => 'screen', '']);
-$this->registerCss($script, ['depends' => \app\assets_b\AppAsset::class]);
-$user = Yii::$app->session->get('user');
-
-
-$timepo =   date("Y") . "-" . date("m") . "-" . date("d");
-$eventos1 = \app\models\Reservas::find()->where(['sucursal' => 'Doble via a la guardia', 'estado' => '1'])->andWhere(['>=', 'fecha_reserva', $timepo])->orderBy('fecha_reserva')->all();
-$eventos2 = \app\models\Reservas::find()->where(['sucursal' => 'Garden', 'estado' => '1'])->andWhere(['>=', 'fecha_reserva', $timepo])->orderBy('fecha_reserva')->all();
-$eventos3 = \app\models\Reservas::find()->where(['sucursal' => 'Parque Urbano', 'estado' => '1'])->andWhere(['>=', 'fecha_reserva', $timepo])->orderBy('fecha_reserva')->all();
-$eventos4 = \app\models\Reservas::find()->where(['sucursal' => 'Campestre', 'estado' => '1'])->andWhere(['>=', 'fecha_reserva', $timepo])->orderBy('fecha_reserva')->all();
-
-$reservas1 = \app\models\Reservas::find()->where(['estado' => '1'])->all();
-$reservas2 = \app\models\Reservas::find()->where(['estado' => '1'])->all();
-$reservas3 = \app\models\Reservas::find()->where(['estado' => '1'])->all();
-$reservas4 = \app\models\Reservas::find()->where(['estado' => '1'])->all();
-
-$comisiones = \app\models\Reservas::find()->where(['idorganizadora' => $user['idorganizadora']])->andWhere(['>=', 'fecha_reserva', $timepo])->all();
-
-
+    ob_start(); ?>
+    <div class="table-responsive">
+        <table class="table po-tabla">
+            <thead>
+            <tr>
+                <th>Evento</th>
+                <th>Fecha del evento</th>
+                <th class="hidden-xs">Salón</th>
+                <th class="text-right">Comisión</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($filas as $f):
+                $href = Url::to(['site/reserva', 'id' => $f['idreservas']]); ?>
+                <tr class="<?= (int) $f['estado'] === 0 ? 'po-inactiva' : '' ?>">
+                    <td>
+                        <?= Html::encode($f['nombre']) ?>
+                        <?php if ($f['finalizado']): ?>
+                            <span class="po-etiqueta po-etiqueta-fin">Finalizado</span>
+                        <?php endif; ?>
+                        <?php if ((int) $f['estado'] === 0): ?>
+                            <span class="po-etiqueta po-etiqueta-inactiva">Inactiva</span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="po-nowrap"><?= $fechaLarga($f['fecha_reserva']) ?></td>
+                    <td class="hidden-xs"><?= Html::encode($f['sucursal']) ?></td>
+                    <td class="text-right po-nowrap">
+                        <?php if ($f['monto'] === null): ?>
+                            <span class="po-no-cargada">No cargada</span>
+                        <?php else: ?>
+                            <?= $bs($f['monto']) ?>
+                        <?php endif; ?>
+                    </td>
+                    <td class="text-right">
+                        <a href="<?= $href ?>" target="_blank" rel="noopener" class="btn btn-sm po-btn">Ir al evento</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="3" class="text-right hidden-xs"><strong>Total</strong></td>
+                <td colspan="2" class="text-right visible-xs-table-cell"><strong>Total</strong></td>
+                <td class="text-right po-nowrap"><strong><?= $bs($total) ?></strong></td>
+                <td></td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <?php
+    return ob_get_clean();
+};
 ?>
 
-
-<?= $this->render('../banners/fijo',
-    ['titulo' => 'Organizadora / '. $user['nombre'],])
-
-?>
-
-
-
-
-
-
-    <div class="container dededered" style="padding-top: 60px;">
-
-
-
-
-                    <!-- portfolio section -->
-
-                                <div class="row">
-
-                                    <div class="col-xs-12">
-                                        <h2 class="comi"><a href="<?= Url::to(['logout']) ?>" style="
-                                                            color: #6ba622;
-                                                            text-decoration: underline;
-                                            "> CERRAR SESSION </a> </h2> <br>
-                                    </div>
-
-                                    <div class="col-xs-12">
-                                    <h2 class="comi"> COMISIONES </h2> <br> <br>
-                                    </div>
-
-                                    <?php foreach ($comisiones as $reservadede) :
-
-
-                                        $href = Url::to(['reserva' , 'id'=> $reservadede['idreservas']]);
-                                        ?>
-                                    <div class="col-xs-12">
-
-
-
-                                        <div class="caja">
-                                            <div class="col-sm-6 col-xs-12">
-                                                <p><strong> Evento de: </strong> <a href="<?= $href; ?>" style="
-    color: #669f20;
-
-" > <?=$reservadede['nombre']?> </a> </p>
-                                            </div>
-                                            <div class="col-sm-6 col-xs-12">
-                                                <p><strong> Comision: </strong><?=$reservadede['comision_organizadora']?> Bs. </p>
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-
-
-                                         <?php endforeach;?>
-
-
-
-
-                                    <?php
-                                    $query = (new \yii\db\Query())->from('reservas1')->where(['idorganizadora' => $user['idorganizadora']])->andWhere(['>=', 'fecha_reserva', $timepo]);
-                                    $sum = $query->sum('comision_organizadora');
-                                    ?>
-
-                                    <div class="col-xs-12">
-                                    <p style="float: right; font-size: 18px;">COMISION TOTAL: <strong>  <?php  echo $sum; ?> Bs. </strong> </p>
-
-                                   </div>
-
-
-                                    <div class="col-xs-12"> <BR>
-                                        <h2 class="comi"> EVENTOS </h2> <br> <br>
-                                    </div>
-
-                                    <div class="col-xs-12">
-
-
-                                        <div class="col-md-4 col-sm-6 ">
-                                        <h2 class="acc_trigger ">
-                                            <a href="#"><span
-                                                        class="tit_acor" style="color: #527f1a;">Doble via a la guardia</span></a></h2>
-
-                                        <img src="<?= \yii\helpers\Url::to('@web/assets_b/img/salondoblevia1.jpg') ?>" class="img-responsive" alt="">
-
-
-                                            <br>
-                                        <div class="acc_container">
-                                            <div class="row">
-
-                                                <div class="col-xs-12" style="    margin-bottom: 40px;">
-
-                                                    <strong> <h4> <strong>Eventos </strong></h4>  </strong>
-
-                                                    <div id="salon1" class="text-center">
-                                                    <div id="calendar" class="center-block "></div>
-
-                                                    </div>
-                                                    <script type="application/javascript">
-                                                        $(document).ready(function() {
-
-                                                            $('#salon1 #calendar').datepicker({
-                                                                startDate: "now",
-                                                                language: "es",
-                                                                todayHighlight: true,
-                                                                beforeShowDay: function (date) {
-
-                                                                    <?php foreach ($reservas1 as $reserva) : ?>
-                                                                    <?php if ($reserva['sucursal'] == "Doble via a la guardia") :?>
-                                                                    if (date.getFullYear() == <?php echo (date('Y', strtotime($reserva['fecha_reserva']))) ?>) {
-                                                                        if (date.getMonth() ==<?php echo (date('m', strtotime($reserva['fecha_reserva']))-1)?>) {
-                                                                            switch
-                                                                                (date.getDate()) {
-                                                                                case <?php echo date('d', strtotime($reserva['fecha_reserva']))?>:
-                                                                                    return {
-                                                                                        tooltip: 'Reservado',
-                                                                                        classes: 'active',
-                                                                                    };
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                    <?php endif;?>
-                                                                    <?php endforeach;?>
-                                                                },
-                                                            });
-                                                        });
-                                                    </script>
-
-                                                    <?php if ($eventos1 ) : ?>
-                                                        <?php  foreach ($eventos1 as $item):
-
-                                                            $href = Url::to(['reserva' , 'id'=> $item['idreservas']]);
-
-
-                                                            $meses2 = array('', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre');
-                                                            $meses = array('', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic');
-                                                            $dia = date("d", strtotime($item['fecha_reserva']));
-                                                            $mes = date("m", strtotime($item['fecha_reserva']));
-                                                            $ano = date("Y", strtotime($item['fecha_reserva']));
-
-
-                                                            ?>
-
-
-
-                                                              <p>
-
-                                                                  <strong> Nombre: </strong>     <?=$item['nombre']?>
-
-                                                              </p>
-
-                                                    <p>
-                                                 <strong> Fecha de evento: </strong>   <?= $dia?> de <?= $meses2[$mes * 1] ?>, <?= $ano ?>
-                                                    </p>
-
-
-                                                            <a href="<?= $href; ?>" style="
-    color: #669f20;
-    text-decoration: underline;
-" >Ir a ficha de evento</a>
-                                                            <hr>
-
-
-                                                            <?php
-                                                        endforeach; ?>
-
-                                                    <?php else: ?>
-
-                                                        <p style="color: #9E9E9E">Sin eventos</p>
-                                                    <?php endIf?>
-
-
-                                                </div>
-                                                <br><br>
-
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                        <div class="col-md-4 col-sm-6 ">
-                                        <h2 class="acc_trigger "><a ><span
-                                                        class="tit_acor" style="color: #527f1a;" >Garden</span></a></h2>
-
-
-                                        <img src="<?= \yii\helpers\Url::to('@web/assets_b/img/salongarden1.jpg') ?>" class="img-responsive" alt="">
-
-
-                                        <br>
-                                        <div class="acc_container">
-                                            <div class="row">
-
-
-                                                <div class="col-xs-12" style="    margin-bottom: 40px;">
-
-                                                    <strong> <h4> <strong>Eventos </strong></h4>  </strong>
-
-                                                    <div id="salon2" class="text-center">
-                                                    <div id="calendar2" class="center-block"></div>
-                                                    </div>
-                                                    <script type="application/javascript">
-
-                                                        $(document).ready(function() {
-
-                                                            $('#salon2 #calendar2').datepicker({
-                                                                startDate: "now",
-                                                                language: "es",
-                                                                todayHighlight: true,
-                                                                beforeShowDay: function (date){
-                                                                    <?php foreach ($reservas2 as $reserva) : ?>
-                                                                    <?php if ($reserva['sucursal'] == "Garden") :?>
-                                                                    if (date.getFullYear() == <?php echo (date('Y', strtotime($reserva['fecha_reserva']))) ?>) {
-                                                                        if (date.getMonth() ==<?php echo (date('m', strtotime($reserva['fecha_reserva']))-1)?>) {
-
-                                                                            switch
-                                                                                (date.getDate()) {
-                                                                                case <?php echo date('d', strtotime($reserva['fecha_reserva']))?>:
-                                                                                    return {
-                                                                                        tooltip: 'Reservado',
-                                                                                        classes: 'active',
-                                                                                    };
-                                                                            }
-
-                                                                        }
-                                                                    }
-                                                                    <?php endif;?>
-                                                                    <?php endforeach;?>
-                                                                },
-                                                            });
-                                                        });
-                                                    </script>
-
-
-                                                    <?php if ($eventos2) : ?>
-
-                                                        <?php  foreach ($eventos2 as $item2):
-                                                            $href = Url::to(['reserva' , 'id'=> $item2['idreservas']]);
-                                                            $meses2 = array('', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre');
-                                                            $meses = array('', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic');
-                                                            $dia = date("d", strtotime($item2['fecha_reserva']));
-                                                            $mes = date("m", strtotime($item2['fecha_reserva']));
-                                                            $ano = date("Y", strtotime($item2['fecha_reserva']));
-                                                            ?>
-
-
-
-                                                            <p>
-
-                                                                <strong> Nombre: </strong>        <?=$item2['nombre']?>
-
-                                                            </p>
-
-                                                            <p>
-                                                                <strong> Fecha de evento: </strong>   <?= $dia?> de <?= $meses2[$mes * 1] ?>, <?= $ano ?>
-                                                            </p>
-
-
-                                                            <a href="<?= $href; ?>" style="
-    color: #669f20;
-    text-decoration: underline;
-" >Ir a ficha de evento</a>
-                                                            <hr>
-
-
-                                                            <?php
-                                                        endforeach; ?>
-
-
-                                                    <?php else: ?>
-
-                                                        <p style="color: #9E9E9E">Sin eventos</p>
-                                                    <?php endIf?>
-
-
-                                                </div>
-                                                <br><br>
-
-
-
-
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-                                        <div class="col-md-4 col-sm-6 ">
-                                        <h2 class="acc_trigger "><a href="#"><span
-                                                        class="tit_acor" style="color: #527f1a;">Parque Urbano</span></a></h2>
-
-
-                                        <img src="<?= \yii\helpers\Url::to('@web/assets_b/img/salonparqueurbano1.jpg') ?>" class="img-responsive" alt="">
-
-
-                                        <br>
-                                        <div class="acc_container">
-                                            <div class="row">
-
-
-                                                <div class="col-xs-12" style="    margin-bottom: 40px;">
-
-                                                    <strong> <h4> <strong>Eventos </strong></h4>  </strong>
-
-                                                    <div id="salon3" class="text-center">
-                                                    <div id="calendar3" class="center-block" style="margin: 0 auto"></div>
-                                                    </div>
-
-                                                    <script type="application/javascript">
-
-                                                        $(document).ready(function() {
-
-                                                            $('#salon3 #calendar3').datepicker({
-                                                                startDate: "now",
-                                                                language: "es",
-                                                                todayHighlight: true,
-                                                                beforeShowDay: function (date){
-                                                                    <?php foreach ($reservas3 as $reserva) : ?>
-                                                                    <?php if ($reserva['sucursal'] == "Parque Urbano") :?>
-                                                                    if (date.getFullYear() == <?php echo (date('Y', strtotime($reserva['fecha_reserva']))) ?>) {
-                                                                        if (date.getMonth() ==<?php echo (date('m', strtotime($reserva['fecha_reserva']))-1)?>) {
-
-                                                                            switch
-                                                                                (date.getDate()) {
-                                                                                case <?php echo date('d', strtotime($reserva['fecha_reserva']))?>:
-                                                                                    return {
-                                                                                        tooltip: 'Reservado',
-                                                                                        classes: 'active',
-                                                                                    };
-                                                                            }
-
-                                                                        }
-                                                                    }
-                                                                    <?php endif;?>
-                                                                    <?php endforeach;?>
-                                                                },
-                                                            });
-                                                        });
-                                                    </script>
-
-                                                    <?php if ($eventos3) : ?>
-
-                                                        <?php  foreach ($eventos3 as $item3):
-                                                            $href = Url::to(['reserva' , 'id'=> $item3['idreservas']]);
-
-
-                                                            $meses2 = array('', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre');
-                                                            $meses = array('', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic');
-                                                            $dia = date("d", strtotime($item3['fecha_reserva']));
-                                                            $mes = date("m", strtotime($item3['fecha_reserva']));
-                                                            $ano = date("Y", strtotime($item3['fecha_reserva']));
-                                                            ?>
-
-
-
-                                                            <p>
-
-                                                                <strong> Nombre: </strong> <?=$item3['nombre']?>
-
-                                                            </p>
-
-                                                            <p>
-                                                                <strong> Fecha de evento: </strong>   <?= $dia?> de <?= $meses2[$mes * 1] ?>, <?= $ano ?>
-                                                            </p>
-
-
-                                                            <a href="<?= $href; ?>" style="
-    color: #669f20;
-    text-decoration: underline;
-" >Ir a ficha de evento</a>
-                                                            <hr>
-
-                                                            <?php
-                                                        endforeach; ?>
-
-                                                    <?php else: ?>
-
-                                                        <p style="color: #9E9E9E">Sin eventos</p>
-                                                    <?php endIf?>
-
-
-                                                </div>
-                                                <br><br>
-
-
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                        <!-- <div class="col-md-3 col-sm-6 ">
-                                        <h2 class="acc_trigger "><a  ><span
-                                                        class="tit_acor" style="color: #527f1a;">Campestre</span></a></h2>
-
-
-                                        <img src="<?= \yii\helpers\Url::to('@web/assets_b/img/verdemanzana.jpg') ?>" class="img-responsive" alt="">
-
-
-
-                                        <div class="acc_container">
-                                            <div class="row">
-
-
-                                                <div class="col-xs-12" style="    margin-bottom: 40px;">
-
-                                                    <strong>
-                                                        <h4>
-                                                            <strong>Eventos </strong>
-                                                        </h4>
-                                                    </strong>
-
-
-
-                                                    <div id="salon4" class="text-center">
-
-                                                    <div id="calendar4" class="center-block" style="margin: 0 auto"></div>
-
-                                                    </div>
-
-                                                    <script type="application/javascript">
-
-                                                        $(document).ready(function() {
-
-                                                            $('#salon4 #calendar4').datepicker({
-                                                                startDate: "now",
-                                                                language: "es",
-                                                                todayHighlight: true,
-                                                                beforeShowDay: function (date){
-                                                                    <?php foreach ($reservas4 as $reserva) : ?>
-                                                                    <?php if ($reserva['sucursal'] == "Campestre") :?>
-                                                                    if (date.getFullYear() == <?php echo (date('Y', strtotime($reserva['fecha_reserva']))) ?>) {
-                                                                        if (date.getMonth() ==<?php echo (date('m', strtotime($reserva['fecha_reserva']))-1)?>) {
-
-                                                                            switch
-                                                                                (date.getDate()) {
-                                                                                case <?php echo date('d', strtotime($reserva['fecha_reserva']))?>:
-                                                                                    return {
-                                                                                        tooltip: 'Reservado',
-                                                                                        classes: 'active',
-                                                                                    };
-                                                                            }
-
-                                                                        }
-                                                                    }
-                                                                    <?php endif;?>
-                                                                    <?php endforeach;?>
-                                                                },
-                                                            });
-                                                        });
-                                                    </script>
-                                                    <?php if ($eventos4) : ?>
-
-                                                        <?php  foreach ($eventos4 as $item4):
-                                                            $href = Url::to(['reserva' , 'id'=> $item4['idreservas']]);
-
-                                                            $meses2 = array('', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre');
-                                                            $meses = array('', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic');
-                                                            $dia = date("d", strtotime($item4['fecha_reserva']));
-                                                            $mes = date("m", strtotime($item4['fecha_reserva']));
-                                                            $ano = date("Y", strtotime($item4['fecha_reserva']));
-                                                            ?>
-
-
-
-                                                            <p>
-
-                                                                <strong> Nombre: </strong> <?=$item4['nombre']?>
-
-                                                            </p>
-
-                                                            <p>
-                                                                <strong> Fecha de evento: </strong>    <?= $dia?> de <?= $meses2[$mes * 1] ?>, <?= $ano ?>
-                                                            </p>
-
-
-                                                            <a href="<?= $href; ?>" style="
-    color: #669f20;
-    text-decoration: underline;
-" >Ir a ficha de evento</a>
-                                                            <hr>
-
-
-                                                            <?php
-                                                        endforeach; ?>
-
-                                                    <?php else: ?>
-
-                                                        <p style="color: #9E9E9E">Sin eventos</p>
-                                                    <?php endIf?>
-
-
-                                                </div>
-                                                <br><br>
-
-
-
-
-                                            </div>
-                                        </div>
-                                    </div>  -->
-
-
-                                    </div>
-
-
-
-
-                            </div>
-
+<?= $this->render('../banners/fijo', ['titulo' => 'Organizadora / ' . Html::encode($nombreOrg)]) ?>
+
+<div class="container po-perfil">
+
+    <!-- ===================== COMISIONES ===================== -->
+    <h2 class="po-titulo">Comisiones</h2>
+
+    <div class="row po-resumen">
+        <div class="col-sm-6">
+            <div class="po-caja-total">
+                <span>Próximos eventos</span>
+                <strong><?= $bs($totalProximas) ?></strong>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="po-caja-total po-caja-total-gris">
+                <span>Eventos realizados en <?= (int) $anioElegido ?></span>
+                <strong><?= $bs($totalRealizadas) ?></strong>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs po-tabs" role="tablist">
+        <li class="<?= $verRealizadas ? '' : 'active' ?>">
+            <a href="#po-proximas" data-toggle="tab" role="tab">Próximas (<?= count($proximas) ?>)</a>
+        </li>
+        <li class="<?= $verRealizadas ? 'active' : '' ?>">
+            <a href="#po-realizadas" data-toggle="tab" role="tab">Realizadas</a>
+        </li>
+    </ul>
+
+    <div class="tab-content po-tab-content">
+        <div class="tab-pane <?= $verRealizadas ? '' : 'active' ?>" id="po-proximas">
+            <?= $tablaComisiones($proximas, $totalProximas, 'No tenés eventos próximos asignados.') ?>
+        </div>
+
+        <div class="tab-pane <?= $verRealizadas ? 'active' : '' ?>" id="po-realizadas">
+            <?php if ($anios): ?>
+                <form method="get" action="<?= Url::to(['site/perfilorganizadora']) ?>" class="form-inline po-anio">
+                    <label for="po-anio">Año:</label>
+                    <select name="anio" id="po-anio" class="form-control input-sm" onchange="this.form.submit()">
+                        <?php foreach ($anios as $a): ?>
+                            <option value="<?= $a ?>" <?= $a === $anioElegido ? 'selected' : '' ?>><?= $a ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            <?php endif; ?>
+            <?= $tablaComisiones($realizadasAnio, $totalRealizadas, 'No hay eventos realizados en este año.') ?>
+        </div>
+    </div>
+
+    <!-- ===================== EVENTOS (de todas) ===================== -->
+    <h2 class="po-titulo">Eventos</h2>
+
+    <div class="row">
+        <?php foreach ($salones as $salon => $imagen):
+            $idCal = 'po-cal-' . md5($salon);
+            $eventos = $eventosPorSalon[$salon];
+            $fechas = array_values(array_unique(array_column($eventos, 'fecha_reserva'))); ?>
+            <div class="col-md-4 col-sm-6 po-salon">
+                <h3 class="po-salon-nombre"><?= Html::encode($salon) ?></h3>
+                <img src="<?= Url::to('@web/assets_b/img/' . $imagen) ?>" class="img-responsive" alt="<?= Html::encode($salon) ?>">
+
+                <h4><strong>Eventos</strong></h4>
+                <div class="text-center">
+                    <div id="<?= $idCal ?>" class="center-block po-calendario"
+                         data-fechas='<?= Html::encode(Json::encode($fechas)) ?>'></div>
+                </div>
+
+                <?php if ($eventos): ?>
+                    <?php foreach ($eventos as $e): ?>
+                        <div class="po-evento">
+                            <p><strong>Nombre:</strong> <?= Html::encode($e['nombre']) ?></p>
+                            <p><strong>Fecha de evento:</strong> <?= $fechaLarga($e['fecha_reserva']) ?></p>
+                            <a href="<?= Url::to(['site/reserva', 'id' => $e['idreservas']]) ?>"
+                               target="_blank" rel="noopener" class="po-link">Ir a ficha de evento</a>
                         </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="po-vacio">Sin eventos</p>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
 
-
-
-
-
-
+<?php
+// Calendarios: marcan en verde las fechas ocupadas (solo desde hoy).
+$js = <<<JS
+$('.po-calendario').each(function () {
+    var ocupadas = $(this).data('fechas') || [];
+    var dos = function (n) { return (n < 10 ? '0' : '') + n; };
+    $(this).datepicker({
+        startDate: 'now',
+        language: 'es',
+        todayHighlight: true,
+        beforeShowDay: function (d) {
+            var clave = d.getFullYear() + '-' + dos(d.getMonth() + 1) + '-' + dos(d.getDate());
+            if (ocupadas.indexOf(clave) !== -1) {
+                return {tooltip: 'Reservado', classes: 'active'};
+            }
+        }
+    });
+});
+JS;
+$this->registerJs($js);
+?>

@@ -173,6 +173,8 @@ $escape = new \yii\web\JsExpression("function(m) { return m; }");
                         } else {
                             // Reservas viejas (formulario anterior)
                             $items[] = $item('fa-eye', 'Ver', ['reservas/view', 'id' => $id]);
+                            $items[] = $item('fa-money', 'Facturación / Pagos', ['reserva-pasos/pagos', 'id' => $id]);
+                            $items[] = $item('fa-pencil', 'Modificar presupuesto (sistema nuevo)', ['reserva-pasos/modificar-presupuesto', 'id' => $id]);
                             $items[] = $item('fa-users', 'Lista de invitados', ['reservas/invitados', 'idreservas' => $id]);
                             $items[] = $item('fa-key', 'Cambiar contraseña', ['reservas/update2', 'id' => $id]);
                         }

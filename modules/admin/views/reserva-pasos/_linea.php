@@ -52,6 +52,9 @@ $seccion = $esPlantilla ? '' : $linea->seccion;
                 <?= Html::hiddenInput($n . '[iddetalle]', $linea->iddetalle) ?>
             <?php endif; ?>
             <?= Html::hiddenInput($n . '[idorigen]', $linea->idorigen) ?>
+            <?php if ($linea->isNewRecord && $linea->idorigen === null): ?>
+                <?= Html::hiddenInput($n . '[anterior]', 1) /* servicios adicionales de una reserva vieja */ ?>
+            <?php endif; ?>
             <span class="label label-<?= $seccion === 'proveedor' ? 'warning' : 'info' ?>"><?= Html::encode($linea->getSeccionTexto()) ?></span>
             <b><?= Html::encode($linea->nombre) ?></b>
             <?php if ($linea->empresa): ?><small class="text-muted">· <?= Html::encode($linea->empresa) ?></small><?php endif; ?>

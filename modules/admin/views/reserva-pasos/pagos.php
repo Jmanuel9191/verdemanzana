@@ -11,20 +11,27 @@ use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
 /* @var $reserva Reservas */
-/* @var $cotizacion ReservaCotizacion */
+/* @var $cotizacion ReservaCotizacion|null   null = reserva vieja */
+/* @var $cuentaInicial app\models\ReservaCuentaInicial|null  saldo de arranque (solo reservas viejas) */
+/* @var $cuenta ReservaCotizacion|app\models\ReservaCuentaInicial  la que se cobra */
 /* @var $pagos ReservaPago[] */
 /* @var $pago ReservaPago  formulario de pago nuevo */
 
 $this->title = 'Reserva: ' . $reserva->nombre;
 $this->params['breadcrumbs'][] = ['label' => 'Reservas', 'url' => ['reservas/index']];
-$this->params['breadcrumbs'][] = ['label' => $reserva->nombre, 'url' => ['presupuesto', 'id' => $reserva->idreservas]];
+$esVieja = $cotizacion === null;
+$urlReserva = $esVieja ? ['reservas/view', 'id' => $reserva->idreservas] : ['presupuesto', 'id' => $reserva->idreservas];
+$this->params['breadcrumbs'][] = ['label' => $reserva->nombre, 'url' => $urlReserva];
 $this->params['breadcrumbs'][] = 'Pagos';
 
-$total = $cotizacion->total;
-$pagado = $cotizacion->getTotalPagado();
-$saldo = $cotizacion->getSaldo();
+$total = $cuenta->getTotal();
+$pagado = $cuenta->getTotalPagado();
+$saldo = $cuenta->getSaldo();
 $saldoC = ReservaCotizacionDetalle::aCentavos($saldo);
-$paquete = $cotizacion->lineaPaquete;
+$paquete = $cotizacion ? $cotizacion->lineaPaquete : null;
+// Reserva vieja: lo cancelado antes del sistema (sin comprobante)
+$canceladoInicial = $cuentaInicial ? $cuentaInicial->getCanceladoInicial() : '0';
+$hayInicial = ReservaCotizacionDetalle::aCentavos($canceladoInicial) > 0;
 
 $cantidadValidos = 0;
 foreach ($pagos as $p) {
@@ -54,15 +61,23 @@ $abrirFormulario = $pago->hasErrors();
     <?php endforeach; ?>
 
     <?= $this->render('_resumen', [
-        'paquete'   => $paquete ? $paquete->nombre : '',
-        'invitados' => $paquete ? (string)(int)round((float)$paquete->cantidad) : '',
+        'paquete'   => $paquete ? $paquete->nombre : (string)$reserva->paquete_reservar,
+        'invitados' => $paquete ? (string)(int)round((float)$paquete->cantidad) : ((int)$reserva->limite_invitados ? (string)(int)$reserva->limite_invitados : ''),
         'fecha'     => $reserva->fecha_reserva,
         'sucursal'  => $reserva->sucursal,
         'total'     => $total,
         'pagado'    => $pagado,
     ]) ?>
 
-    <?= $this->render('_pasos', ['actual' => 'pagos', 'idreservas' => $reserva->idreservas]) ?>
+    <?php if (!$esVieja): ?>
+        <?= $this->render('_pasos', ['actual' => 'pagos', 'idreservas' => $reserva->idreservas]) ?>
+    <?php else: ?>
+        <div class="alert alert-info">
+            <i class="fa fa-info-circle"></i> Reserva creada con el formulario anterior. Los pagos se cobran sobre el
+            <b>saldo de arranque</b> (paquete + servicios adicionales, menos lo cancelado antes del sistema).
+            <?= Html::a('<i class="fa fa-pencil"></i> Editar saldo de arranque', ['saldo-inicial', 'id' => $reserva->idreservas], ['class' => 'btn btn-primary btn-xs', 'style' => 'text-decoration:none;margin-left:6px']) ?>
+        </div>
+    <?php endif; ?>
 
     <div class="box box-success caja-paso">
         <div class="box-body">
@@ -70,8 +85,10 @@ $abrirFormulario = $pago->hasErrors();
             <div class="encabezado-pagos">
                 <h3 class="titulo-seccion"> Pagos</h3>
                 <div>
+                <?php if (!$esVieja): ?>
                 <?= Html::a(' Estado de cuenta', ['pdf', 'id' => $reserva->idreservas, 'tipo' => 'pagos'],
                     ['class' => 'btn btn-danger', 'target' => '_blank', 'title' => 'Abrir PDF (solo pagos válidos)']) ?>
+                <?php endif; ?>
                 <?php if ($saldoC > 0): ?>
                     <button type="button" class="btn btn-success" id="btn-nuevo-pago">
                         <i class="fa fa-plus"></i> Registrar pago
@@ -141,7 +158,7 @@ $abrirFormulario = $pago->hasErrors();
             <?php endif; ?>
 
             <!-- ===================== HISTORIAL ===================== -->
-            <?php if (empty($pagos)): ?>
+            <?php if (empty($pagos) && !$hayInicial): ?>
                 <p class="text-muted sin-pagos"><i class="fa fa-info-circle"></i> Todavía no hay pagos registrados.</p>
             <?php else: ?>
                 <div class="table-responsive">
@@ -159,6 +176,19 @@ $abrirFormulario = $pago->hasErrors();
                         </tr>
                         </thead>
                         <tbody>
+                        <?php if ($hayInicial): ?>
+                            <tr class="fila-pago-inicial">
+                                <td>—</td>
+                                <td colspan="2"><b>Cancelado antes del sistema</b>
+                                    <span class="pull-right"><b><?= FormatoHelper::formatoBs($canceladoInicial) ?></b></span></td>
+                                <td colspan="3" class="text-muted"><small>Registro anterior, sin comprobante (del saldo de arranque).</small></td>
+                                <td class="col-registro">
+                                    <?= Html::encode($fechaHora($cuentaInicial->fecha_registro)) ?><br>
+                                    <small class="text-muted"><?= Html::encode(ReservaPago::nombreAdmin(\app\models\Administrador::findOne((int)$cuentaInicial->idadmin_registro))) ?></small>
+                                </td>
+                                <td class="text-center"><span class="label label-info">Inicial</span></td>
+                            </tr>
+                        <?php endif; ?>
                         <?php foreach ($pagos as $p): ?>
                             <?php $valido = $p->esValido(); ?>
                             <tr class="<?= $valido ? '' : 'pago-anulado' ?>">
@@ -167,7 +197,9 @@ $abrirFormulario = $pago->hasErrors();
                                 <td class="text-right tachable"><b><?= Html::encode($p->getMontoTexto()) ?></b></td>
                                 <td class="tachable"><?= Html::encode($p->getFormaPagoTexto()) ?></td>
                                 <td>
-                                    <?php if ($p->getRutaComprobante() !== null): ?>
+                                    <?php if ($p->esAnterior()): ?>
+                                        <span class="text-muted" title="Cancelado antes del sistema de comprobantes"><i class="fa fa-history"></i> Registro anterior</span>
+                                    <?php elseif ($p->getRutaComprobante() !== null): ?>
                                         <?php $esPdf = strtolower(pathinfo($p->comprobante, PATHINFO_EXTENSION)) === 'pdf'; ?>
                                         <?= Html::a('<i class="fa ' . ($esPdf ? 'fa-file-pdf-o' : 'fa-file-image-o') . '"></i> Ver',
                                             ['comprobante', 'idpago' => $p->idpago],
@@ -217,9 +249,15 @@ $abrirFormulario = $pago->hasErrors();
                 <div class="col-md-5 col-md-offset-7 col-sm-8 col-sm-offset-4">
                     <table class="table tabla-totales">
                         <tr>
-                            <th>Total del presupuesto</th>
+                            <th><?= $esVieja ? 'Total (paquete + servicios adicionales)' : 'Total del presupuesto' ?></th>
                             <td><?= FormatoHelper::formatoBs($total) ?></td>
                         </tr>
+                        <?php if ($hayInicial): ?>
+                            <tr>
+                                <th>Cancelado antes del sistema</th>
+                                <td><?= FormatoHelper::formatoBs($canceladoInicial) ?></td>
+                            </tr>
+                        <?php endif; ?>
                         <tr>
                             <th>Cancelado a la fecha <small class="text-muted">(<?= $cantidadValidos ?> pago<?= $cantidadValidos === 1 ? '' : 's' ?> válido<?= $cantidadValidos === 1 ? '' : 's' ?>)</small></th>
                             <td><?= FormatoHelper::formatoBs($pagado) ?></td>
@@ -234,7 +272,7 @@ $abrirFormulario = $pago->hasErrors();
 
         </div>
         <div class="box-footer">
-            <?= Html::a('<i class="fa fa-arrow-left"></i> Volver al presupuesto', ['presupuesto', 'id' => $reserva->idreservas], ['class' => 'btn btn-default']) ?>
+            <?= Html::a('<i class="fa fa-arrow-left"></i> ' . ($esVieja ? 'Volver a la reserva' : 'Volver al presupuesto'), $urlReserva, ['class' => 'btn btn-default']) ?>
             <?= Html::a('<i class="fa fa-list"></i> Ir al listado de reservas', ['reservas/index'], ['class' => 'btn btn-default']) ?>
         </div>
     </div>

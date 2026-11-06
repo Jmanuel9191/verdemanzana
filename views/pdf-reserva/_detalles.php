@@ -8,6 +8,7 @@ use yii\helpers\Html;
 /* @var $cotizacion app\models\ReservaCotizacion */
 /* @var $invitados int */
 /* @var $completo bool */
+/* @var $mostrarComision bool  (false = no imprimir la comisión) */
 
 $r = $reserva;
 $v = function ($x) {
@@ -29,7 +30,11 @@ $limite = (int)$r->limite_invitados;
 <table class="datos">
     <tr>
         <td width="40%"><span class="etq">Organizadora</span><br><?= $v($organizadora ? $organizadora->nombre : '') ?></td>
+        <?php if ($mostrarComision ?? true): ?>
         <td width="30%"><span class="etq">Comisión</span><br><?= $comision === '' ? '<span class="muted">—</span>' : Html::encode(is_numeric($comision) ? FormatoHelper::formatoBs($comision) : $comision) ?></td>
+        <?php else: ?>
+        <td width="30%"></td>
+        <?php endif; ?>
         <td width="30%"><span class="etq">Garzones</span><br><?= $v($r->cant_garzones) ?></td>
     </tr>
     <tr>

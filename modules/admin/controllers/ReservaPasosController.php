@@ -9,6 +9,7 @@ use app\models\PresupuestoForm;
 use app\models\ReservaCotizacion;
 use app\models\ReservaCotizacionHistorial;
 use app\models\ReservaCronograma;
+use app\models\ReservaCuentaInicial;
 use app\models\ReservaPago;
 use app\models\Reservas;
 use Yii;
@@ -22,8 +23,10 @@ use yii\web\UploadedFile;
 /**
  * Reserva nueva en pasos: 1) Presupuesto  2) Pagos  3) Detalles.
  *
- * Solo trabaja con reservas que tienen cotización (formulario nuevo).
- * Las reservas viejas siguen con ReservasController, sin cambios.
+ * Trabaja con reservas que tienen cotización (formulario nuevo).
+ * Excepción: Pagos (y anular / comprobante / saldo de arranque) también sirve para
+ * las reservas viejas, usando su "saldo de arranque" (reserva_cuenta_inicial).
+ * El resto de las reservas viejas sigue con ReservasController, sin cambios.
  * Lo usan administradores tipo 1 y tipo 2 (no está en $soloAdminPrincipal).
  */
 class ReservaPasosController extends Controller
@@ -94,7 +97,14 @@ class ReservaPasosController extends Controller
      */
     public function actionModificarPresupuesto($id)
     {
-        [$reserva, $cotizacion] = $this->buscar($id);
+        [$reserva, $cotizacion, $cuentaInicial] = $this->buscarParaPagos($id);
+
+        // ---- Reserva VIEJA: se pasa al sistema nuevo al guardar este presupuesto
+        if ($cotizacion === null) {
+            // Si no tenía saldo de arranque, se arma con lo que figura en la reserva (se guarda al final)
+            return $this->convertirReservaVieja($reserva, $cuentaInicial ?? ReservaCuentaInicial::desdeReserva($reserva));
+        }
+
         $form = PresupuestoForm::deReserva($reserva, $cotizacion);
         $form->modo = PresupuestoForm::MODO_PRESUPUESTO;
 
@@ -124,7 +134,11 @@ class ReservaPasosController extends Controller
      */
     public function actionPagos($id)
     {
-        [$reserva, $cotizacion] = $this->buscar($id);
+        [$reserva, $cotizacion, $cuentaInicial] = $this->buscarParaPagos($id);
+        if ($cotizacion === null && $cuentaInicial === null) {
+            // Reserva vieja sin saldo de arranque: primero se confirma
+            return $this->redirect(['saldo-inicial', 'id' => $reserva->idreservas]);
+        }
 
         $pago = new ReservaPago();
         $pago->scenario = 'registrar';
@@ -148,10 +162,50 @@ class ReservaPasosController extends Controller
             ->all();
 
         return $this->render('pagos', [
-            'reserva'    => $reserva,
-            'cotizacion' => $cotizacion,
-            'pagos'      => $pagos,
-            'pago'       => $pago,
+            'reserva'       => $reserva,
+            'cotizacion'    => $cotizacion,
+            'cuentaInicial' => $cuentaInicial,
+            'cuenta'        => $cotizacion ?? $cuentaInicial,
+            'pagos'         => $pagos,
+            'pago'          => $pago,
+        ]);
+    }
+
+    /**
+     * Reserva VIEJA: confirmar (o corregir) el saldo de arranque antes de cargar pagos.
+     * Se completa con los montos que hoy tiene reservas1.
+     */
+    public function actionSaldoInicial($id)
+    {
+        [$reserva, $cotizacion, $cuentaInicial] = $this->buscarParaPagos($id);
+        if ($cotizacion !== null) {
+            // Las reservas nuevas no usan saldo de arranque
+            return $this->redirect(['pagos', 'id' => $reserva->idreservas]);
+        }
+        $esNueva = $cuentaInicial === null;
+        $cuenta = $cuentaInicial ?? ReservaCuentaInicial::desdeReserva($reserva);
+
+        if (Yii::$app->request->isPost && $cuenta->load(Yii::$app->request->post())) {
+            $cuenta->idreservas = (int)$reserva->idreservas;   // nunca del formulario
+            if ($cuenta->save()) {
+                $cuenta->sincronizarReserva();
+                if (Yii::$app->request->get('siguiente') === 'presupuesto') {
+                    Yii::$app->session->setFlash('success', 'Saldo anterior confirmado. Ahora elegí el paquete y armá el presupuesto nuevo.');
+                    return $this->redirect(['modificar-presupuesto', 'id' => $reserva->idreservas]);
+                }
+                Yii::$app->session->setFlash('success', $esNueva
+                    ? 'Saldo de arranque guardado. Ya podés registrar pagos.'
+                    : 'Saldo de arranque actualizado.');
+                return $this->redirect(['pagos', 'id' => $reserva->idreservas]);
+            }
+        }
+
+        return $this->render('saldo-inicial', [
+            'reserva' => $reserva,
+            'cuenta'  => $cuenta,
+            'esNueva' => $esNueva,
+            'paraPresupuesto' => Yii::$app->request->get('siguiente') === 'presupuesto',
+            'pagado'  => ReservaPago::totalPagado((int)$reserva->idreservas),
         ]);
     }
 
@@ -272,7 +326,7 @@ class ReservaPasosController extends Controller
      */
     public function actionAnularPago($id)
     {
-        [$reserva] = $this->buscar($id);
+        [$reserva] = $this->buscarParaPagos($id);
         $idpago = (int)Yii::$app->request->post('idpago');
         $motivo = (string)Yii::$app->request->post('motivo', '');
 
@@ -321,10 +375,13 @@ class ReservaPasosController extends Controller
         $db = Yii::$app->db;
         $transaccion = $db->beginTransaction();
         try {
-            $db->createCommand(
-                'SELECT idcotizacion FROM {{%reserva_cotizacion}} WHERE idreservas = :id FOR UPDATE',
-                [':id' => (int)$pago->idreservas]
-            )->queryScalar();
+            // Bloquea la cuenta (cotización o saldo de arranque) hasta terminar
+            foreach (['{{%reserva_cotizacion}}', '{{%reserva_cuenta_inicial}}'] as $tabla) {
+                $db->createCommand(
+                    'SELECT idreservas FROM ' . $tabla . ' WHERE idreservas = :id FOR UPDATE',
+                    [':id' => (int)$pago->idreservas]
+                )->queryScalar();
+            }
 
             if ($pago->registrar()) {
                 $transaccion->commit();
@@ -341,6 +398,55 @@ class ReservaPasosController extends Controller
             $pago->addError('monto', 'Ocurrió un error al registrar el pago. Intentá de nuevo.');
             return false;
         }
+    }
+
+    /**
+     * Reserva vieja → sistema nuevo: se elige el paquete (obligatorio), se arma el
+     * presupuesto con la referencia del anterior y, al guardar, queda como reserva nueva
+     * (lo cancelado antes y los pagos con comprobante se mantienen).
+     */
+    protected function convertirReservaVieja(Reservas $reserva, ReservaCuentaInicial $cuentaInicial)
+    {
+        $form = PresupuestoForm::deReservaVieja($reserva, $cuentaInicial);
+
+        if (Yii::$app->request->isPost && $form->load(Yii::$app->request->post())) {
+            if ($form->guardar()) {
+                $cot = $form->cotizacion;
+                $mensaje = 'Listo: la reserva pasó al sistema nuevo. Presupuesto '
+                    . \app\helpers\FormatoHelper::formatoBs($cuentaInicial->getTotal()) . ' → '
+                    . \app\helpers\FormatoHelper::formatoBs($cot->total) . '.';
+                $cargados = (int)Invitados::find()->where(['idreservas' => (int)$reserva->idreservas])->count();
+                $nuevos = $form->paquete ? (int)round((float)$form->paquete->cantidad) : 0;
+                if ($cargados > $nuevos) {
+                    $mensaje .= ' Ojo: la lista de invitados ya tiene ' . $cargados . ' cargados y el paquete quedó para ' . $nuevos . '.';
+                }
+                Yii::$app->session->setFlash('success', $mensaje);
+                return $this->redirect(['ver', 'id' => $reserva->idreservas]);
+            }
+            Yii::$app->session->setFlash('error', 'No se guardó. Revisá los datos marcados en rojo.');
+        }
+
+        return $this->render('presupuesto', [
+            'form'      => $form,
+            'historial' => [],
+            'cargados'  => (int)Invitados::find()->where(['idreservas' => (int)$reserva->idreservas])->count(),
+        ]);
+    }
+
+    /**
+     * Para Pagos: sirve para reservas nuevas y viejas.
+     * @return array [Reservas, ReservaCotizacion|null, ReservaCuentaInicial|null]
+     * @throws NotFoundHttpException
+     */
+    protected function buscarParaPagos($id): array
+    {
+        $reserva = Reservas::findOne((int)$id);
+        if ($reserva === null) {
+            throw new NotFoundHttpException('La reserva no existe.');
+        }
+        $idr = (int)$reserva->idreservas;
+        $cotizacion = ReservaCotizacion::deReserva($idr);
+        return [$reserva, $cotizacion, $cotizacion ? null : ReservaCuentaInicial::deReserva($idr)];
     }
 
     /**

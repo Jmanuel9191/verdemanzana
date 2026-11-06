@@ -37,6 +37,13 @@ class ReservaPago extends ActiveRecord
     public const ESTADO_VALIDO = 1;
 
     public const CARPETA = '@app/privado/comprobantes';
+
+    /**
+     * Forma de pago especial: lo cancelado ANTES del sistema de comprobantes, que se
+     * guarda como un pago al pasar una reserva vieja al sistema nuevo. No tiene
+     * comprobante y no aparece en el desplegable de formas de pago.
+     */
+    public const FORMA_ANTERIOR = 'anterior';
     public const EXTENSIONES = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
     public const TAMANO_MAX = 5 * 1024 * 1024; // 5 MB
 
@@ -137,12 +144,12 @@ class ReservaPago extends ActiveRecord
         if (!$this->isNewRecord) {
             return;
         }
-        $cotizacion = ReservaCotizacion::deReserva((int)$this->idreservas);
-        if ($cotizacion === null) {
-            $this->addError($attribute, 'La reserva no tiene presupuesto: primero completá el Paso 1.');
+        $cuenta = self::cuentaDe((int)$this->idreservas);
+        if ($cuenta === null) {
+            $this->addError($attribute, 'La reserva no tiene presupuesto ni saldo de arranque cargado.');
             return;
         }
-        $saldoC = ReservaCotizacionDetalle::aCentavos($cotizacion->getSaldo());
+        $saldoC = ReservaCotizacionDetalle::aCentavos($cuenta->getSaldo());
         $montoC = ReservaCotizacionDetalle::aCentavos($this->$attribute);
 
         if ($saldoC <= 0) {
@@ -224,10 +231,24 @@ class ReservaPago extends ActiveRecord
     /** Actualiza cancelado/saldo en las columnas de texto de reservas1. */
     private function actualizarReserva(): void
     {
-        $cotizacion = ReservaCotizacion::deReserva((int)$this->idreservas);
-        if ($cotizacion !== null) {
-            $cotizacion->sincronizarReserva();
+        $cuenta = self::cuentaDe((int)$this->idreservas);
+        if ($cuenta !== null) {
+            $cuenta->sincronizarReserva();
         }
+    }
+
+    /**
+     * Cuenta contra la que se cobra:
+     *  - reserva nueva → su cotización (presupuesto por pasos)
+     *  - reserva vieja → su saldo de arranque (reserva_cuenta_inicial)
+     *  - null → todavía no se puede registrar pagos
+     * Ambas tienen getTotal/getTotalPagado/getSaldo/sincronizarReserva.
+     *
+     * @return ReservaCotizacion|ReservaCuentaInicial|null
+     */
+    public static function cuentaDe(int $idreservas)
+    {
+        return ReservaCotizacion::deReserva($idreservas) ?? ReservaCuentaInicial::deReserva($idreservas);
     }
 
     // ---------------------------------------------------------------- consultas
@@ -288,7 +309,37 @@ class ReservaPago extends ActiveRecord
 
     public function getFormaPagoTexto(): string
     {
+        if ($this->forma_pago === self::FORMA_ANTERIOR) {
+            return 'Registro anterior';
+        }
         return self::formasPago()[$this->forma_pago] ?? (string)$this->forma_pago;
+    }
+
+    /** ¿Es lo cancelado antes del sistema (sin comprobante)? */
+    public function esAnterior(): bool
+    {
+        return $this->forma_pago === self::FORMA_ANTERIOR;
+    }
+
+    /**
+     * Guarda lo cancelado antes del sistema como un pago "Registro anterior"
+     * (sin comprobante). Se usa al pasar una reserva vieja al sistema nuevo.
+     */
+    public static function crearAnterior(int $idreservas, string $monto, string $fecha, string $observacion): self
+    {
+        $p = new self();
+        $p->idreservas = $idreservas;
+        $p->fecha_pago = $fecha;
+        $p->monto = $monto;
+        $p->forma_pago = self::FORMA_ANTERIOR;
+        $p->comprobante = '';
+        $p->observacion = $observacion;
+        $p->estado = self::ESTADO_VALIDO;
+        $p->idadmin_registro = self::idAdminActual();
+        if (!$p->save(false)) {
+            throw new \RuntimeException('No se pudo guardar lo cancelado anteriormente.');
+        }
+        return $p;
     }
 
     public function getMontoTexto(): string

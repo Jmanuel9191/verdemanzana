@@ -1,49 +1,31 @@
 <?php
-use yii\helpers\Url;
+/**
+ * Ficha del evento para la organizadora (/reserva?id=X).
+ * Datos: SiteController::actionReserva() + SiteController::datosFicha().
+ *
+ * @var $this            yii\web\View
+ * @var $model           app\models\Reservas
+ * @var $cotizacion      app\models\ReservaCotizacion|null
+ * @var $cuentaInicial   app\models\ReservaCuentaInicial|null
+ * @var $pagos           app\models\ReservaPago[]
+ * @var $cronograma      app\models\ReservaCronograma
+ * @var $tieneGuia       bool
+ * @var $mostrarComision bool
+ */
 
-$script = <<<CSS
+use yii\helpers\Html;
 
-
-
-CSS;
-
-
-
-$this->registerCss($script);
-$configuracion = \app\models\Configuracion::find()->one();
-
-
-$cat="";
-
-
-@$nombre = $_GET['cat'];
-
-
-$categorias5 = \app\models\Categoria::findOne(['idcategoria' => $nombre]);
-
+$this->title = 'Ficha del evento - ' . $model->nombre;
 ?>
 
+<?= $this->render('banners/fijo', ['titulo' => 'Ficha del evento']) ?>
 
-
-<?= $this->render('banners/fijo',
-    ['titulo' => 'Ficha del evento',])
-
-?>
-
-<br>
-<br>
-
-    <?php
-    if (isset($all)) {
-        echo $this->render('reservas/lista', ['model' => $model->getModels(), 'data' => $model, 'categoria' => $categoria]);
-        echo $this->render('widgets/metatags', ['model' => $configuracion]);
-    } else {
-            if (!empty($model)) {
-            echo $this->render('reservas/item', ['model' => $model]);
-        }
-    }
-    ?>
-
-
-<br>
-
+<?= $this->render('reservas/item', [
+    'model'           => $model,
+    'cotizacion'      => $cotizacion,
+    'cuentaInicial'   => $cuentaInicial,
+    'pagos'           => $pagos,
+    'cronograma'      => $cronograma,
+    'tieneGuia'       => $tieneGuia,
+    'mostrarComision' => $mostrarComision,
+]) ?>

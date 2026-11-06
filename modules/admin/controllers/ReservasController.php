@@ -174,6 +174,10 @@ class ReservasController extends Controller
      */
     public function actionView($id)
     {
+        // Si ya pasó al sistema nuevo, se ve con la ficha nueva
+        if (\app\models\ReservaCotizacion::find()->where(['idreservas' => (int)$id])->exists()) {
+            return $this->redirect(['reserva-pasos/ver', 'id' => (int)$id]);
+        }
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
@@ -294,6 +298,12 @@ class ReservasController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post())) {
+            // Con Facturación (saldo de arranque) los montos solo cambian desde Pagos
+            if (\app\models\ReservaCuentaInicial::find()->where(['idreservas' => (int)$model->idreservas])->exists()) {
+                foreach (\app\models\ReservaCuentaInicial::COLUMNAS_RESERVA as $columna) {
+                    $model->$columna = $model->getOldAttribute($columna);
+                }
+            }
             $model->file = UploadedFile::getInstance($model, 'file');
             $model->file2 = UploadedFile::getInstance($model, 'file2');
             $model->file3 = UploadedFile::getInstance($model, 'file3');
