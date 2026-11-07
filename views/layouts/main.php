@@ -164,7 +164,7 @@ CSS;
                         'template' => $plantillaDesplegable,
                         'items' => [
                             ['label' => 'Mi perfil', 'url' => ['/site/perfilorganizadora']],
-                            ['label' => 'Cerrar sesión', 'url' => ['/site/logout'], 'template' => $plantillaSalir],
+                            ['label' => 'Cerrar sesion', 'url' => ['/site/logout'], 'template' => $plantillaSalir],
                         ],
                     ]
                     : ['label' => 'Team Verde Manzana', 'url' => ['/site/perfilorganizadora'], 'options' => ['class' => '']];
@@ -178,7 +178,7 @@ CSS;
                         'template' => $plantillaDesplegable,
                         'items' => [
                             ['label' => 'Ver mi evento', 'url' => ['/site/perfilreserva']],
-                            ['label' => 'Cerrar sesión', 'url' => ['/site/logout2'], 'template' => $plantillaSalir],
+                            ['label' => 'Cerrar sesion', 'url' => ['/site/logout2'], 'template' => $plantillaSalir],
                         ],
                     ]
                     : ['label' => 'Mi evento', 'url' => ['/site/perfilreserva'], 'options' => ['class' => '']];

@@ -24,6 +24,10 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="col-md-12">
             <div class="box">
                 <div class="box-body ">
+                    <p class="text-muted" style="margin-bottom:12px">
+                        <i class="fa fa-info-circle"></i> Podés subir imágenes de hasta <b>15 MB</b> cada una.
+                        Cuanto más pesada, más tarda en subir: <b>esperá a que aparezca "Hecho"</b> antes de salir.
+                    </p>
                     <?php
                     $initial = [];
                     $config = [];
@@ -47,13 +51,18 @@ $this->params['breadcrumbs'][] = $this->title;
                             'initialPreviewFileType' => 'image',
                             //'maxFileCount' => 10,
                             'allowedFileExtensions' => ['jpg', 'png', 'gif', 'webp', 'jpeg'],
+                            'maxFileSize' => 15360, // 15 MB
                             'initialPreview' => $initial,
                             'initialPreviewConfig' => $config,
                             "language" => "es"
-                        ]
+                        ],
+                        // Al terminar de subir, recarga la pagina para mostrar las
+                        // imagenes ya guardadas (con su boton de borrar).
+                        'pluginEvents' => [
+                            'filebatchuploadcomplete' => 'function() { window.location.reload(); }',
+                        ],
                     ]);
                     ActiveForm::end();
-                    print_r(Url::to(['reservas/uploaddecoracionus']));
                     ?>
 
 

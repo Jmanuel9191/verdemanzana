@@ -49,7 +49,8 @@ $temas = [
 <section class="vm-bloque" id="mis-observaciones">
     <h2 class="vm-bloque-titulo">Mis observaciones</h2>
 
-    <p class="vm-gris">Contanos lo que quieras para tu evento y subí fotos de referencia. Podés cambiarlo cuando quieras.</p>
+    <p class="vm-gris">Contanos lo que quieras para tu evento y subí fotos de referencia. Podés cambiarlo cuando quieras.
+        Las imágenes pueden pesar hasta <b>15 MB</b> cada una; cuanto más pesadas, más tardan en subir, así que esperá a que terminen.</p>
 
     <?= Html::beginForm(['site/comentarios'], 'post', ['id' => 'form-observaciones']) ?>
     <div class="row">

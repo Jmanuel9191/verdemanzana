@@ -53,7 +53,7 @@ $figura = function ($valor, $extra = '') use ($esNueva) {
             <p class="text-muted">
                 Esta reserva se creó con el formulario anterior. Para cobrarle pagos con comprobante, confirmá
                 <b>cuánto cuesta</b> y <b>cuánto ya se había cancelado antes</b>. Los montos vienen cargados desde la reserva:
-                revisalos y corregí lo que haga falta. Paquete y servicios adicionales quedan en <b>una sola cuenta</b>.
+                porfavor revisar y corregír lo que haga falta. Paquete y servicios adicionales quedan en <b>una sola cuenta</b>.
             </p>
             <?php if ($paraPresupuesto): ?>
                 <div class="alert alert-info">

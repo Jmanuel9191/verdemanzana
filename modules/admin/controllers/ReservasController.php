@@ -525,13 +525,12 @@ class ReservasController extends Controller
             $model->fecha_registro = date('Y-m-d H:i:s');
             $model->idreservas = Yii::$app->request->post('id');
             if ($model->save(false)) {
-                echo Json::encode([]);
-                return $this->redirect(['galeriacronograma', 'id' => Yii::$app->request->post('id')]);
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return []; // Kartik FileInput: JSON vacio = subida correcta
             }
         }
-        var_dump($model->getErrors());
-        die();
-        return false;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return ['error' => 'No se pudo subir la imagen. Revisá el formato (jpg, png, webp) y el tamaño.'];
     }
 
 
@@ -555,13 +554,12 @@ class ReservasController extends Controller
             $model->fecha_registro = date('Y-m-d H:i:s');
             $model->idreservas = Yii::$app->request->post('id');
             if ($model->save(false)) {
-                echo Json::encode([]);
-                return $this->redirect(['galeriadecoracion', 'id' => Yii::$app->request->post('id')]);
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return []; // Kartik FileInput: JSON vacio = subida correcta
             }
         }
-        var_dump($model->getErrors());
-        die();
-        return false;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return ['error' => 'No se pudo subir la imagen. Revisá el formato (jpg, png, webp) y el tamaño.'];
     }
 
 
@@ -584,13 +582,12 @@ class ReservasController extends Controller
             $model->fecha_registro = date('Y-m-d H:i:s');
             $model->idreservas = Yii::$app->request->post('id');
             if ($model->save(false)) {
-                echo Json::encode([]);
-                return $this->redirect(['galeriadecoracionus', 'id' => Yii::$app->request->post('id')]);
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return []; // Kartik FileInput: JSON vacio = subida correcta
             }
         }
-        var_dump($model->getErrors());
-        die();
-        return false;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return ['error' => 'No se pudo subir la imagen. Revisá el formato (jpg, png, webp) y el tamaño.'];
     }
 
 
@@ -614,13 +611,12 @@ class ReservasController extends Controller
             $model->fecha_registro = date('Y-m-d H:i:s');
             $model->idreservas = Yii::$app->request->post('id');
             if ($model->save(false)) {
-                echo Json::encode([]);
-                return $this->redirect(['galeriapresupuesto', 'id' => Yii::$app->request->post('id')]);
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return []; // Kartik FileInput: JSON vacio = subida correcta
             }
         }
-        var_dump($model->getErrors());
-        die();
-        return false;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return ['error' => 'No se pudo subir la imagen. Revisá el formato (jpg, png, webp) y el tamaño.'];
     }
 
 
@@ -643,13 +639,12 @@ class ReservasController extends Controller
             $model->fecha_registro = date('Y-m-d H:i:s');
             $model->idreservas = Yii::$app->request->post('id');
             if ($model->save(false)) {
-                echo Json::encode([]);
-                return $this->redirect(['galeriacoordinacion', 'id' => Yii::$app->request->post('id')]);
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return []; // Kartik FileInput: JSON vacio = subida correcta
             }
         }
-        var_dump($model->getErrors());
-        die();
-        return false;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return ['error' => 'No se pudo subir la imagen. Revisá el formato (jpg, png, webp) y el tamaño.'];
     }
 
 
@@ -674,13 +669,12 @@ class ReservasController extends Controller
             $model->fecha_registro = date('Y-m-d H:i:s');
             $model->idreservas = Yii::$app->request->post('id');
             if ($model->save(false)) {
-                echo Json::encode([]);
-                return $this->redirect(['galeriaequipamiento', 'id' => Yii::$app->request->post('id')]);
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return []; // Kartik FileInput: JSON vacio = subida correcta
             }
         }
-        var_dump($model->getErrors());
-        die();
-        return false;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return ['error' => 'No se pudo subir la imagen. Revisá el formato (jpg, png, webp) y el tamaño.'];
     }
 
 

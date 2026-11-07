@@ -8,7 +8,7 @@
 (function ($) {
     'use strict';
 
-    var MAX_MB = 8;
+    var MAX_MB = 15;
     var TIPOS = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
     function csrf() {

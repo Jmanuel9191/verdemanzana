@@ -33,7 +33,7 @@ class ReservasGaleriadecoracion extends \yii\db\ActiveRecord
             [['fecha_registro'], 'safe'],
             [['archivo'], 'string', 'max' => 255],
              ['file', 'file', 'extensions' => 'jpg, png, gif, webp, jpeg', 'mimeTypes' => 'image/jpeg, image/gif, image/webp, image/png'],
-           [['file'], 'file', 'maxSize'=>'8000000'],
+           [['file'], 'file', 'maxSize'=>'15728640'],
         ];
     }
 

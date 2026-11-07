@@ -158,6 +158,31 @@ $(document).ready(function () {
         .load(url);
 });
 
+    // Enviar el formulario de la ventana por AJAX (antes recargaba toda la pagina
+    // y, si faltaba un campo, mostraba una pagina pelada sin estilos).
+    $(document).on('submit', '#modal-invitado form', function (e) {
+        e.preventDefault();
+        var frm = $(this);
+        var btn = frm.find('button[type=submit]').prop('disabled', true);
+        $.ajax({
+            url: frm.attr('action'),
+            type: 'POST',
+            data: frm.serialize(),
+            dataType: 'json'
+        }).done(function (r) {
+            if (r && r.success) {
+                if (window.location.hash.indexOf('invitados') === -1) { window.location.hash = 'invitados'; }
+                window.location.reload();
+            } else {
+                $('#modal-contenido-invitado').html(r && r.html ? r.html : 'No se pudo guardar.');
+                btn.prop('disabled', false);
+            }
+        }).fail(function () {
+            btn.prop('disabled', false);
+            alert('No se pudo guardar. Revisa los datos e intenta de nuevo.');
+        });
+    });
+
     if ($('#flash-invitado-editado').length) {
     Swal.fire({
         title: 'Invitado editado correctamente',

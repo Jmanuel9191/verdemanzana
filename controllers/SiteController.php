@@ -1198,8 +1198,19 @@ class SiteController extends Controller
 
         if ($model->load(Yii::$app->request->post())) {
             $model->idreservas = $idreservas; // no se puede cambiar desde el formulario
-            if ($model->save()) {
+            $guardado = $model->save();
+            if ($guardado) {
                 Yii::$app->session->setFlash('invitadoCreado', true);
+            }
+            // Se envía por AJAX desde la ventana (organizadora y cliente): devolvemos JSON.
+            // success => el JS recarga y muestra la lista; si no, devolvemos el form con los errores.
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return $guardado
+                    ? ['success' => true]
+                    : ['success' => false, 'html' => $this->renderPartial('reservas/createinvitado', ['model' => $model])];
+            }
+            if ($guardado) {
                 return $this->redirigirAInvitados($idreservas);
             }
         }
@@ -1226,8 +1237,17 @@ class SiteController extends Controller
 
         if ($model->load(Yii::$app->request->post())) {
             $model->idreservas = $idreservas; // no se puede mover a otra reserva
-            if ($model->save()) {
+            $guardado = $model->save();
+            if ($guardado) {
                 Yii::$app->session->setFlash('invitadoEditado', true);
+            }
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                return $guardado
+                    ? ['success' => true]
+                    : ['success' => false, 'html' => $this->renderPartial('reservas/updateinv', ['model' => $model])];
+            }
+            if ($guardado) {
                 return $this->redirigirAInvitados($idreservas);
             }
         }
