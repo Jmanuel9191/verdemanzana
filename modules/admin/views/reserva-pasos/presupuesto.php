@@ -182,7 +182,7 @@ $pagosNuevos = $esConversion ? \app\models\ReservaPago::totalPagado((int)$reserv
             <div class="box-body">
                 <div class="alert alert-warning aviso-modificar">
                     <i class="fa fa-info-circle"></i>
-                    Estás modificando el presupuesto de una reserva ya creada. Al guardar, el cambio queda registrado en el historial
+                    Se va a modificar el presupuesto de una reserva ya creada. Al guardar, el cambio queda registrado en el historial
                     (qué se agregó, quitó o cambió, el total anterior y el nuevo, quién y cuándo).
                 </div>
             </div>
@@ -234,7 +234,7 @@ $pagosNuevos = $esConversion ? \app\models\ReservaPago::totalPagado((int)$reserv
                     <?= $af->field($reserva, 'nombre')->textInput(['maxlength' => true])->label('Nombre(s) del cliente') ?>
                     <?= $af->field($reserva, 'telefono')->textInput(['maxlength' => 20, 'inputmode' => 'numeric', 'placeholder' => 'Solo números, ej. 70012345'])->label('Teléfono') ?>
                     <?= $af->field($reserva, 'email')->textInput(['maxlength' => 250, 'autocomplete' => 'off', 'placeholder' => 'Ej. ana.luis@gmail.com o analuis2027'])
-                        ->label('Email o usuario para iniciar sesión')->hint('Es el usuario del cliente: puede ser un email o un nombre sin @. Sin espacios. No se puede repetir.') ?>
+                        ->label('Email o usuario para iniciar sesión')->hint('Es el usuario del cliente: puede ser un email o un usuario normal. Sin espacios. (No se puede repetir).') ?>
 
                     <?php if ($esNueva): ?>
                         <?= $this->render('_campo_contrasena', [

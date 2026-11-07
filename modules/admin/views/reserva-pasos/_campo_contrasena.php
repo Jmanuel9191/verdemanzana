@@ -32,6 +32,6 @@ $min = \app\models\PresupuestoForm::CONTRASENA_MIN;
     <?php if ($error): ?>
         <p class="help-block help-block-error"><?= Html::encode($error) ?></p>
     <?php else: ?>
-        <p class="help-block">Con el ojito podés ver lo que escribís. Se guarda cifrada: después no se puede ver, solo cambiar.</p>
+        <p class="help-block"></p>
     <?php endif; ?>
 </div>

@@ -2,6 +2,7 @@
 
 namespace app\components;
 
+use app\components\DistribucionInvitados;
 use app\models\Configuracion;
 use app\models\Invitados;
 use app\models\ReservaCotizacion;
@@ -97,6 +98,59 @@ class PdfReserva
         $mpdf->WriteHTML($html);
 
         $nombre = Inflector::slug(self::TIPOS[$tipo] . ' ' . self::nombreEvento($reserva), '_', false) . '_' . $id . '.pdf';
+        return [$mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN), $nombre];
+    }
+
+    /**
+     * PDF de la lista de invitados (mismo formato/encabezado que los demás).
+     * Funciona para cualquier reserva (vieja o nueva). Si hay imagen de distribución
+     * cargada, se agrega después de la lista.
+     *
+     * @return array [contenido binario del PDF, nombre de archivo sugerido]
+     */
+    public static function generarInvitados(Reservas $reserva): array
+    {
+        $id = (int)$reserva->idreservas;
+
+        $invitados = Invitados::find()
+            ->where(['idreservas' => $id])
+            ->orderBy(['nro_mesa' => SORT_ASC, 'apellido' => SORT_ASC, 'nombre' => SORT_ASC])
+            ->all();
+
+        $imagen = DistribucionInvitados::buscar($id);
+
+        $html = Yii::$app->view->render('@app/views/pdf-reserva/documento_invitados', [
+            'titulo'    => 'Lista de invitados',
+            'reserva'   => $reserva,
+            'empresa'   => Configuracion::find()->one(),
+            'logo'      => self::rutaLogo(),
+            'invitados' => $invitados,
+            'limite'    => (int)$reserva->limite_invitados,
+            // Imagen de distribución en disco (mPDF la lee por ruta de archivo)
+            'imagen'    => $imagen ? DistribucionInvitados::ruta($imagen) : null,
+        ]);
+
+        $tmp = Yii::getAlias('@runtime/mpdf');
+        FileHelper::createDirectory($tmp, 0775, true);
+
+        $mpdf = new \Mpdf\Mpdf([
+            'mode'          => 'utf-8',
+            'format'        => 'Letter',
+            'margin_left'   => 14,
+            'margin_right'  => 14,
+            'margin_top'    => 30,
+            'margin_bottom' => 18,
+            'margin_header' => 8,
+            'margin_footer' => 8,
+            'default_font'  => 'dejavusans',
+            'tempDir'       => $tmp,
+        ]);
+        $mpdf->SetTitle('Lista de invitados - ' . self::nombreEvento($reserva));
+        $mpdf->SetAuthor('Verde Manzana');
+        $mpdf->showImageErrors = false;
+        $mpdf->WriteHTML($html);
+
+        $nombre = Inflector::slug('Lista de invitados ' . self::nombreEvento($reserva), '_', false) . '_' . $id . '.pdf';
         return [$mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN), $nombre];
     }
 

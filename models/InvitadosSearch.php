@@ -23,11 +23,12 @@ class InvitadosSearch extends Invitados
 
     public function search($params)
     {
-        $query = Invitados::find();
+        // orden base: las mesas sin número van al final (si no, MySQL pone los NULL primero)
+        $query = Invitados::find()->orderBy(new \yii\db\Expression('nro_mesa IS NULL'));
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['defaultOrder' => ['apellido' => SORT_ASC, 'nombre' => SORT_ASC]],
+            'sort' => ['defaultOrder' => ['nro_mesa' => SORT_ASC, 'apellido' => SORT_ASC]],
             'pagination' => [
                 'pageSize' => 20,
             ],

@@ -84,13 +84,44 @@ class ReservasController extends Controller
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         $dataProvider->setSort([
-            'defaultOrder' => ['apellido' => SORT_ASC, 'nombre' => SORT_ASC],
+            'defaultOrder' => ['nro_mesa' => SORT_ASC, 'apellido' => SORT_ASC],
         ]);
 
         return $this->render('viewinvitados', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
             'idreservas' => $idreservas, // útil para crear nuevo invitado
+            'distribucion' => \app\components\DistribucionInvitados::buscar((int)$idreservas),
+        ]);
+    }
+
+    /** Sube/reemplaza la imagen de distribución de la lista de invitados (admin). */
+    public function actionSubirDistribucion($idreservas)
+    {
+        $reserva = Reservas::findOne((int)$idreservas);
+        if ($reserva === null) {
+            throw new NotFoundHttpException('La reserva no existe.');
+        }
+        if (Yii::$app->request->isPost) {
+            $file = UploadedFile::getInstanceByName('distribucion');
+            [$ok, $msg] = \app\components\DistribucionInvitados::guardar($reserva, $file);
+            Yii::$app->session->setFlash($ok ? 'success' : 'error',
+                $ok ? 'Imagen de distribución guardada.' : $msg);
+        }
+        return $this->redirect(['invitados', 'idreservas' => (int)$idreservas]);
+    }
+
+    /** PDF de la lista de invitados (admin). */
+    public function actionInvitadosPdf($idreservas)
+    {
+        $reserva = Reservas::findOne((int)$idreservas);
+        if ($reserva === null) {
+            throw new NotFoundHttpException('La reserva no existe.');
+        }
+        [$contenido, $nombre] = \app\components\PdfReserva::generarInvitados($reserva);
+        return Yii::$app->response->sendContentAsFile($contenido, $nombre, [
+            'mimeType' => 'application/pdf',
+            'inline'   => true,
         ]);
     }
 

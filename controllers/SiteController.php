@@ -1065,6 +1065,44 @@ class SiteController extends Controller
         ]);
     }
 
+    /**
+     * Sube/reemplaza la imagen de distribución de la lista de invitados.
+     * Solo la organizadora (el cliente no sube; la ve y la descarga en el PDF).
+     */
+    public function actionSubirDistribucion($id)
+    {
+        $esOrganizadora = !Yii::$app->user->isGuest && !empty(Yii::$app->session->get('user'));
+        if (!$esOrganizadora) {
+            throw new \yii\web\ForbiddenHttpException('Solo la organizadora puede subir la distribución.');
+        }
+        $reserva = Reservas::findOne((int)$id);
+        if ($reserva === null) {
+            throw new \yii\web\NotFoundHttpException('La reserva no existe.');
+        }
+        if (Yii::$app->request->isPost) {
+            $file = \yii\web\UploadedFile::getInstanceByName('distribucion');
+            [$ok, $msg] = \app\components\DistribucionInvitados::guardar($reserva, $file);
+            Yii::$app->session->setFlash($ok ? 'invitadoCreado' : 'error',
+                $ok ? true : $msg);
+        }
+        return $this->redirect(['reserva', 'id' => (int)$id, '#' => 'invitados']);
+    }
+
+    /** PDF de la lista de invitados (organizadora o cliente dueño). */
+    public function actionInvitadosPdf($id)
+    {
+        $this->verificarAccesoReserva($id);
+        $reserva = Reservas::findOne((int)$id);
+        if ($reserva === null) {
+            throw new \yii\web\NotFoundHttpException('La reserva no existe.');
+        }
+        [$contenido, $nombre] = \app\components\PdfReserva::generarInvitados($reserva);
+        return Yii::$app->response->sendContentAsFile($contenido, $nombre, [
+            'mimeType' => 'application/pdf',
+            'inline'   => true,
+        ]);
+    }
+
 
 
     public function actionNoticia($id=null)

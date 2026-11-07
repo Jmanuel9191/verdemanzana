@@ -10,7 +10,9 @@ use app\models\Invitados;
 /* @var $searchModel app\models\InvitadosSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 /* @var $idreservas int */
+/* @var $distribucion string|null  imagen de distribución (nombre de archivo) */
 
+$distribucion = $distribucion ?? \app\components\DistribucionInvitados::buscar((int)$idreservas);
 $this->title = 'Lista de invitados';
 $this->params['breadcrumbs'][] = $this->title;
 
@@ -44,7 +46,10 @@ $puedeAgregar = $puedeModificar && ($cantidadInvitados < $limiteInvitados);
 
                     <?php if ($puedeAgregar): ?>
                         <?= Html::a('Agregar Invitado', ['createinvitado', 'idreservas' => $idreservas], ['class' => 'btn btn-success']) ?>
-                    <?php else: ?>
+                    <?php endif; ?>
+                    <?= Html::a('<i class="fa fa-file-pdf-o"></i> Descargar PDF', ['invitados-pdf', 'idreservas' => $idreservas], ['class' => 'btn btn-danger', 'target' => '_blank']) ?>
+
+                    <?php if (!$puedeAgregar): ?>
                         <div class="alert alert-warning" style="margin-top:10px;">
                             <?= $puedeModificar ? 'Ya alcanzaste el límite de invitados.' : 'Ya no es posible modificar la lista de invitados. Se cerró el plazo.' ?>
                         </div>
@@ -92,6 +97,29 @@ $puedeAgregar = $puedeModificar && ($cantidadInvitados < $limiteInvitados);
                         ]); ?>
                     </div>
                     <?php Pjax::end(); ?>
+
+                    <!-- ===== Distribución de la lista de invitados (imagen) ===== -->
+                    <hr>
+                    <h4 style="color:#527f1a"><strong>Distribución de la lista de invitados</strong></h4>
+
+                    <?php if ($distribucion): ?>
+                        <p>
+                            <a href="<?= Html::encode(\app\components\DistribucionInvitados::url($distribucion)) ?>" target="_blank">
+                                <img src="<?= Html::encode(\app\components\DistribucionInvitados::url($distribucion)) ?>"
+                                     alt="Distribución" style="max-width:320px; max-height:240px; border:1px solid #ddd; border-radius:4px;">
+                            </a>
+                        </p>
+                    <?php else: ?>
+                        <p class="text-muted">Todavía no se cargó la distribución.</p>
+                    <?php endif; ?>
+
+                    <?= Html::beginForm(['subir-distribucion', 'idreservas' => $idreservas], 'post', ['enctype' => 'multipart/form-data', 'class' => 'form-inline']) ?>
+                        <div class="form-group">
+                            <input type="file" name="distribucion" accept="image/jpeg,image/png,image/webp" required>
+                        </div>
+                        <?= Html::submitButton('<i class="fa fa-upload"></i> ' . ($distribucion ? 'Cambiar distribución' : 'Subir distribución'), ['class' => 'btn btn-primary']) ?>
+                        <p class="help-block">Una imagen (JPG, PNG o WEBP), hasta 15 MB. Aparece también en el PDF.</p>
+                    <?= Html::endForm() ?>
                 </div>
 
             </div>

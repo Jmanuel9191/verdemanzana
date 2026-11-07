@@ -265,3 +265,9 @@
 .vm-aviso-error { background: #fdf2f1; border-left: 4px solid #c0392b; color: #a93226; }
 .vm-link-wa, .vm-link-wa:hover { color: #25a244; }
 .vm-btn-subir .vm-input-subir { display: none !important; }
+
+/* --- Distribución de la lista de invitados --- */
+.vm-distribucion { margin-top: 25px; }
+.vm-form-distribucion { margin-top: 10px; }
+.vm-form-distribucion input[type=file] { display: none !important; }
+.vm-form-distribucion .vm-btn-subir { margin: 0 8px 0 0; cursor: pointer; }
