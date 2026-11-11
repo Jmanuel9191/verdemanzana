@@ -50,8 +50,8 @@ if ($cuenta) {
 <section class="vm-bloque">
     <h2 class="vm-bloque-titulo">
         Estado de cuenta
-        <?php if (false && $cotizacion): /* PDF comentado por ahora: quitar "false &&" para mostrarlo */ ?>
-            <?= Html::a('<i class="fa-solid fa-file-pdf"></i> Estado de cuenta',
+        <?php if ($cotizacion): ?>
+            <?= Html::a('<i class="fa-solid fa-file-pdf"></i> Descargar estado de cuenta',
                 ['site/reserva-pdf', 'id' => $id, 'tipo' => 'pagos'],
                 ['class' => 'btn vm-btn-pdf pull-right', 'target' => '_blank', 'rel' => 'noopener']) ?>
         <?php endif; ?>

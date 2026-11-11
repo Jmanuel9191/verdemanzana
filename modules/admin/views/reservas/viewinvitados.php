@@ -43,11 +43,13 @@ $puedeAgregar = $puedeModificar && ($cantidadInvitados < $limiteInvitados);
 
                 <div class="box-header">
                     <p><strong>Invitados registrados:</strong> <?= $cantidadInvitados ?> / <?= $limiteInvitados ?></p>
-
+  <?= Html::a('<i class="fa fa-arrow-left"></i> Volver a ver reserva', ['view', 'id' => $idreservas], ['class' => 'btn btn-default']) ?>
+                   
                     <?php if ($puedeAgregar): ?>
                         <?= Html::a('Agregar Invitado', ['createinvitado', 'idreservas' => $idreservas], ['class' => 'btn btn-success']) ?>
                     <?php endif; ?>
-                    <?= Html::a('<i class="fa fa-file-pdf-o"></i> Descargar PDF', ['invitados-pdf', 'idreservas' => $idreservas], ['class' => 'btn btn-danger', 'target' => '_blank']) ?>
+                    <?= Html::a('<i class="fa fa-file-pdf-o"></i> Descargar PDF (Apellido)', ['invitados-pdf', 'idreservas' => $idreservas, 'orden' => 'apellido'], ['class' => 'btn btn-danger', 'target' => '_blank']) ?>
+                    <?= Html::a('<i class="fa fa-file-pdf-o"></i> Descargar PDF (# mesa)', ['invitados-pdf', 'idreservas' => $idreservas, 'orden' => 'mesa'], ['class' => 'btn btn-danger', 'target' => '_blank']) ?>
 
                     <?php if (!$puedeAgregar): ?>
                         <div class="alert alert-warning" style="margin-top:10px;">

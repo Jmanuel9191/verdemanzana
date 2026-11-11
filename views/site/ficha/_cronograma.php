@@ -22,8 +22,8 @@ $hayArchivoViejo = $archivoViejo !== '' && is_file(Yii::getAlias('@webroot') . '
 <section class="vm-bloque">
     <h2 class="vm-bloque-titulo">
         <?= Html::encode(ReservaCronograma::titulo($model)) ?>
-        <?php if (false && $tiene && $cotizacion): /* PDF comentado por ahora: quitar "false &&" para mostrarlo */ ?>
-            <?= Html::a('<i class="fa-solid fa-file-pdf"></i> PDF',
+        <?php if ($tiene && $cotizacion): ?>
+            <?= Html::a('<i class="fa-solid fa-file-pdf"></i> Descargar PDF',
                 ['site/reserva-pdf', 'id' => $id, 'tipo' => 'cronograma'],
                 ['class' => 'btn vm-btn-pdf pull-right', 'target' => '_blank', 'rel' => 'noopener']) ?>
         <?php endif; ?>

@@ -109,6 +109,7 @@ $fechaHora = function ($v) {
             <?= $boton('', 'Pagos', ['pagos', 'id' => $id], 'primary') ?>
             <?= $boton('', 'Detalles', ['detalles', 'id' => $id], 'success') ?>
             <?= $boton('', 'Cronograma', ['cronograma', 'id' => $id], 'success') ?>
+            <?= $boton('', 'Guía', ['guia', 'id' => $id], 'success') ?>
             <?= $boton('', 'Lista de invitados (' . $invitados . ($limite ? '/' . $limite : '') . ')', ['reservas/invitados', 'idreservas' => $id], 'info') ?>
             <?php if ($tieneGuia): ?>
                 <?= $boton('', 'Guía del cliente', ['reservas/viewguia', 'id' => $id]) ?>

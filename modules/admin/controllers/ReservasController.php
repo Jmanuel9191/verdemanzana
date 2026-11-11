@@ -112,13 +112,14 @@ class ReservasController extends Controller
     }
 
     /** PDF de la lista de invitados (admin). */
-    public function actionInvitadosPdf($idreservas)
+    public function actionInvitadosPdf($idreservas, $orden = 'mesa')
     {
         $reserva = Reservas::findOne((int)$idreservas);
         if ($reserva === null) {
             throw new NotFoundHttpException('La reserva no existe.');
         }
-        [$contenido, $nombre] = \app\components\PdfReserva::generarInvitados($reserva);
+        $orden = $orden === 'apellido' ? 'apellido' : 'mesa';
+        [$contenido, $nombre] = \app\components\PdfReserva::generarInvitados($reserva, $orden);
         return Yii::$app->response->sendContentAsFile($contenido, $nombre, [
             'mimeType' => 'application/pdf',
             'inline'   => true,

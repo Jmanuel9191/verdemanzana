@@ -13,13 +13,14 @@ use yii\widgets\Pjax;
 
 $tipoActual = (string)$searchModel->tipo;   // 'item' | 'proveedor' | '' (todos)
 
-$this->title = 'Ítems / Proveedores';
+$this->title = 'Ítems / Proveedores / Experiencias';
 $this->params['breadcrumbs'][] = $this->title;
 
 $pestanas = [
-    Items::TIPO_ITEM      => ['Ítems', '', $totales[Items::TIPO_ITEM] ?? 0],
-    Items::TIPO_PROVEEDOR => ['Proveedores', '', $totales[Items::TIPO_PROVEEDOR] ?? 0],
-    ''                    => ['Todos', '', array_sum($totales)],
+    Items::TIPO_ITEM        => ['Ítems', '', $totales[Items::TIPO_ITEM] ?? 0],
+    Items::TIPO_PROVEEDOR   => ['Proveedores', '', $totales[Items::TIPO_PROVEEDOR] ?? 0],
+    Items::TIPO_EXPERIENCIA => ['Experiencias', '', $totales[Items::TIPO_EXPERIENCIA] ?? 0],
+    ''                      => ['Todos', '', array_sum($totales)],
 ];
 
 // Columnas
@@ -142,6 +143,7 @@ $columnas[] = [
             <div style="margin-bottom:15px">
                 <?= Html::a('<i class="fa fa-plus"></i> Nuevo ítem', ['create', 'tipo' => Items::TIPO_ITEM], ['class' => 'btn btn-success']) ?>
                 <?= Html::a('<i class="fa fa-plus"></i> Nuevo proveedor', ['create', 'tipo' => Items::TIPO_PROVEEDOR], ['class' => 'btn btn-success']) ?>
+                <?= Html::a('<i class="fa fa-plus"></i> Nueva experiencia', ['create', 'tipo' => Items::TIPO_EXPERIENCIA], ['class' => 'btn btn-success']) ?>
             </div>
 
             <div class="nav-tabs-custom">

@@ -29,13 +29,9 @@ $limite = (int)$r->limite_invitados;
 <h2 class="doc-seccion">Organizadora y personal</h2>
 <table class="datos">
     <tr>
-        <td width="40%"><span class="etq">Organizadora</span><br><?= $v($organizadora ? $organizadora->nombre : '') ?></td>
-        <?php if ($mostrarComision ?? true): ?>
-        <td width="30%"><span class="etq">Comisión</span><br><?= $comision === '' ? '<span class="muted">—</span>' : Html::encode(is_numeric($comision) ? FormatoHelper::formatoBs($comision) : $comision) ?></td>
-        <?php else: ?>
-        <td width="30%"></td>
-        <?php endif; ?>
-        <td width="30%"><span class="etq">Garzones</span><br><?= $v($r->cant_garzones) ?></td>
+        <?php /* La comisión de la organizadora no se imprime en ningún PDF (pedido del cliente). */ ?>
+        <td width="50%"><span class="etq">Organizadora</span><br><?= $v($organizadora ? $organizadora->nombre : '') ?></td>
+        <td width="50%"><span class="etq">Garzones</span><br><?= $v($r->cant_garzones) ?></td>
     </tr>
     <tr>
         <td colspan="3"><span class="etq">Lista de invitados</span><br><?= $invitados ?> cargados<?= $limite ? ' de ' . $limite : '' ?></td>

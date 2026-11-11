@@ -108,13 +108,25 @@ class PdfReserva
      *
      * @return array [contenido binario del PDF, nombre de archivo sugerido]
      */
-    public static function generarInvitados(Reservas $reserva): array
+    public static function generarInvitados(Reservas $reserva, string $orden = 'mesa'): array
     {
         $id = (int)$reserva->idreservas;
 
+        // Orden del listado: por apellido o por número de mesa (mesas sin número al final).
+        if ($orden === 'apellido') {
+            $orderBy = ['apellido' => SORT_ASC, 'nombre' => SORT_ASC];
+        } else {
+            $orderBy = [
+                new \yii\db\Expression('nro_mesa IS NULL'),
+                'nro_mesa' => SORT_ASC,
+                'apellido' => SORT_ASC,
+                'nombre'   => SORT_ASC,
+            ];
+        }
+
         $invitados = Invitados::find()
             ->where(['idreservas' => $id])
-            ->orderBy(['nro_mesa' => SORT_ASC, 'apellido' => SORT_ASC, 'nombre' => SORT_ASC])
+            ->orderBy($orderBy)
             ->all();
 
         $imagen = DistribucionInvitados::buscar($id);
@@ -150,7 +162,8 @@ class PdfReserva
         $mpdf->showImageErrors = false;
         $mpdf->WriteHTML($html);
 
-        $nombre = Inflector::slug('Lista de invitados ' . self::nombreEvento($reserva), '_', false) . '_' . $id . '.pdf';
+        $sufijo = $orden === 'apellido' ? 'apellido' : 'mesa';
+        $nombre = Inflector::slug('Lista de invitados ' . self::nombreEvento($reserva), '_', false) . '_' . $id . '_' . $sufijo . '.pdf';
         return [$mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN), $nombre];
     }
 

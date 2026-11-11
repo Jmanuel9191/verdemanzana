@@ -26,6 +26,46 @@ $detallePaquete = $paquete ? FormatoHelper::limpiarHtml($paquete->detalle) : nul
 ?>
 <?= $this->render('_cabecera', ['reserva' => $reserva, 'cotizacion' => $cotizacion, 'titulo' => 'Presupuesto']) ?>
 
+<?php
+[$lineasCero, $lineasCosto] = ReservaCotizacionDetalle::agruparPresupuesto($lineas);
+$grupos = ReservaCotizacionDetalle::gruposPresentes($lineas);
+$nombresGrupos = ReservaCotizacionDetalle::nombresGrupos();
+
+// Una fila del presupuesto. $bg = fondo verde claro (bloque de precio 0).
+$fila = function (ReservaCotizacionDetalle $l, bool $bg) use ($cant, $pct) {
+    $color = ReservaCotizacionDetalle::colorSeccion($l->seccion);
+    $td = $bg ? ' style="background-color:#f7f9f1;"' : '';
+    ob_start(); ?>
+        <tr>
+            <td<?= $td ?>>
+                <b style="color:<?= $color ?>;"><?= Html::encode($l->nombre) ?></b>
+                <?php if ($l->empresa): ?><span class="muted chico"> · <?= Html::encode($l->empresa) ?></span><?php endif; ?>
+            </td>
+            <td class="num"<?= $td ?>><?= $cant($l->cantidad) ?> <span class="muted chico"><?= Html::encode(mb_strtolower($l->getUnidadTexto())) ?></span></td>
+            <td class="num"<?= $td ?>><?= FormatoHelper::formatoBs($l->precio_unitario) ?></td>
+            <td class="num"<?= $td ?>><?= FormatoHelper::formatoBs($l->subtotal) ?></td>
+            <td class="num"<?= $td ?>>
+                <?php if (ReservaCotizacionDetalle::aCentavos($l->descuento_monto) > 0): ?>
+                    − <?= FormatoHelper::formatoBs($l->descuento_monto) ?><br><span class="muted chico">(<?= $pct($l->descuento_porcentaje) ?>%)</span>
+                <?php else: ?>
+                    <span class="muted">—</span>
+                <?php endif; ?>
+            </td>
+            <td class="num"<?= $td ?>><b><?= FormatoHelper::formatoBs($l->total) ?></b></td>
+        </tr>
+    <?php return ob_get_clean();
+};
+?>
+
+<?php if ($grupos): ?>
+    <table width="100%" style="margin-bottom:1.5mm;"><tr><td style="font-size:8.5pt;">
+        <?php foreach ($grupos as $sec): ?>
+            <span style="color:<?= ReservaCotizacionDetalle::colorSeccion($sec) ?>;">■</span>
+            <span class="muted"><?= Html::encode($nombresGrupos[$sec] ?? '') ?></span>&nbsp;&nbsp;&nbsp;
+        <?php endforeach; ?>
+    </td></tr></table>
+<?php endif; ?>
+
 <table class="tabla">
     <thead>
     <tr>
@@ -38,29 +78,14 @@ $detallePaquete = $paquete ? FormatoHelper::limpiarHtml($paquete->detalle) : nul
     </tr>
     </thead>
     <tbody>
-    <?php foreach ($lineas as $l): ?>
-        <?php
-        $sec = $l->seccion;
-        $clase = $sec === ReservaCotizacionDetalle::SECCION_PAQUETE ? 'etq-paquete' : ($sec === 'proveedor' ? 'etq-proveedor' : 'etq-item');
-        ?>
-        <tr class="<?= $sec === ReservaCotizacionDetalle::SECCION_PAQUETE ? 'paquete' : '' ?>">
-            <td>
-                <span class="etiqueta <?= $clase ?>"><?= Html::encode($l->getSeccionTexto()) ?></span>
-                <b><?= Html::encode($l->nombre) ?></b>
-                <?php if ($l->empresa): ?><span class="muted chico"> · <?= Html::encode($l->empresa) ?></span><?php endif; ?>
-            </td>
-            <td class="num"><?= $cant($l->cantidad) ?> <span class="muted chico"><?= Html::encode(mb_strtolower($l->getUnidadTexto())) ?></span></td>
-            <td class="num"><?= FormatoHelper::formatoBs($l->precio_unitario) ?></td>
-            <td class="num"><?= FormatoHelper::formatoBs($l->subtotal) ?></td>
-            <td class="num">
-                <?php if (ReservaCotizacionDetalle::aCentavos($l->descuento_monto) > 0): ?>
-                    − <?= FormatoHelper::formatoBs($l->descuento_monto) ?><br><span class="muted chico">(<?= $pct($l->descuento_porcentaje) ?>%)</span>
-                <?php else: ?>
-                    <span class="muted">—</span>
-                <?php endif; ?>
-            </td>
-            <td class="num"><b><?= FormatoHelper::formatoBs($l->total) ?></b></td>
-        </tr>
+    <?php foreach ($lineasCero as $l): ?>
+        <?= $fila($l, true) ?>
+    <?php endforeach; ?>
+    <?php if ($lineasCero && $lineasCosto): ?>
+        <tr><td colspan="6" style="border-top:0.5mm solid #6ba622; padding:0; height:3mm;"></td></tr>
+    <?php endif; ?>
+    <?php foreach ($lineasCosto as $l): ?>
+        <?= $fila($l, false) ?>
     <?php endforeach; ?>
     </tbody>
 </table>

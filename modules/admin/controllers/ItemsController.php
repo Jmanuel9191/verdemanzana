@@ -161,7 +161,7 @@ class ItemsController extends Controller
             ->asArray()
             ->all();
 
-        $totales = [Items::TIPO_ITEM => 0, Items::TIPO_PROVEEDOR => 0];
+        $totales = [Items::TIPO_ITEM => 0, Items::TIPO_PROVEEDOR => 0, Items::TIPO_EXPERIENCIA => 0];
         foreach ($filas as $fila) {
             $totales[$fila['tipo']] = (int)$fila['total'];
         }

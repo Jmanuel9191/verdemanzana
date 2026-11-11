@@ -33,6 +33,7 @@ class Items extends ActiveRecord
 {
     public const TIPO_ITEM = 'item';
     public const TIPO_PROVEEDOR = 'proveedor';
+    public const TIPO_EXPERIENCIA = 'experiencia';
 
     public const ESTADO_INACTIVO = 0;
     public const ESTADO_ACTIVO = 1;
@@ -47,8 +48,9 @@ class Items extends ActiveRecord
     public static function tipos(): array
     {
         return [
-            self::TIPO_ITEM      => 'Ítem',
-            self::TIPO_PROVEEDOR => 'Proveedor',
+            self::TIPO_ITEM        => 'Ítem',
+            self::TIPO_PROVEEDOR   => 'Proveedor',
+            self::TIPO_EXPERIENCIA => 'Experiencia',
         ];
     }
 
@@ -183,9 +185,14 @@ class Items extends ActiveRecord
             $query->andWhere(['tipo_evento' => ['todos', $tipoEvento]]);
         }
 
+        $grupos = [
+            self::TIPO_ITEM        => 'Ítems',
+            self::TIPO_PROVEEDOR   => 'Proveedores',
+            self::TIPO_EXPERIENCIA => 'Experiencias',
+        ];
         $resultado = [];
         foreach ($query->all() as $item) {
-            $grupo = $item->tipo === self::TIPO_PROVEEDOR ? 'Proveedores' : 'Ítems';
+            $grupo = $grupos[$item->tipo] ?? 'Ítems';
             $resultado[$grupo][$item->iditem] = $item->nombre . ($item->empresa ? ' (' . $item->empresa . ')' : '');
         }
         return $resultado;

@@ -82,7 +82,11 @@ class ReservaCotizacion extends ActiveRecord
     public function getLineasExtras()
     {
         return $this->hasMany(ReservaCotizacionDetalle::class, ['idcotizacion' => 'idcotizacion'])
-            ->andOnCondition(['seccion' => [ReservaCotizacionDetalle::SECCION_ITEM, ReservaCotizacionDetalle::SECCION_PROVEEDOR]])
+            ->andOnCondition(['seccion' => [
+                ReservaCotizacionDetalle::SECCION_ITEM,
+                ReservaCotizacionDetalle::SECCION_PROVEEDOR,
+                ReservaCotizacionDetalle::SECCION_EXPERIENCIA,
+            ]])
             ->orderBy(['orden' => SORT_ASC, 'iddetalle' => SORT_ASC]);
     }
 

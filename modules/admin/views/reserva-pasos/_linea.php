@@ -33,8 +33,8 @@ $seccion = $esPlantilla ? '' : $linea->seccion;
     <td class="col-desc">
         <?php if ($esPlantilla): ?>
             <select name="<?= $n ?>[idorigen]" class="form-control input-sm sel-item">
-                <option value="">— Elegí un ítem o proveedor —</option>
-                <?php foreach (['proveedor' => 'Proveedores', 'item' => 'Ítems'] as $tipo => $grupo): ?>
+                <option value="">— Elegí un ítem, proveedor o experiencia —</option>
+                <?php foreach (['proveedor' => 'Proveedores', 'item' => 'Ítems', 'experiencia' => 'Experiencias'] as $tipo => $grupo): ?>
                     <optgroup label="<?= $grupo ?>">
                         <?php foreach ($catalogoItems as $id => $it): ?>
                             <?php if ($it['tipo'] === $tipo): ?>
@@ -55,7 +55,7 @@ $seccion = $esPlantilla ? '' : $linea->seccion;
             <?php if ($linea->isNewRecord && $linea->idorigen === null): ?>
                 <?= Html::hiddenInput($n . '[anterior]', 1) /* servicios adicionales de una reserva vieja */ ?>
             <?php endif; ?>
-            <span class="label label-<?= $seccion === 'proveedor' ? 'warning' : 'info' ?>"><?= Html::encode($linea->getSeccionTexto()) ?></span>
+            <span class="label label-<?= $seccion === 'proveedor' ? 'warning' : ($seccion === 'experiencia' ? 'primary' : 'info') ?>"><?= Html::encode($linea->getSeccionTexto()) ?></span>
             <b><?= Html::encode($linea->nombre) ?></b>
             <?php if ($linea->empresa): ?><small class="text-muted">· <?= Html::encode($linea->empresa) ?></small><?php endif; ?>
             <?php $det = trim(html_entity_decode(strip_tags((string)$linea->detalle), ENT_QUOTES, 'UTF-8')); ?>

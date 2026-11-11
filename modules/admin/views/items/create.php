@@ -7,7 +7,12 @@ use yii\helpers\Html;
 /* @var $model app\models\Items */
 /* @var $tipo string|null */
 
-$this->title = $tipo === Items::TIPO_PROVEEDOR ? 'Nuevo proveedor' : 'Nuevo ítem';
+$titulos = [
+    Items::TIPO_PROVEEDOR   => 'Nuevo proveedor',
+    Items::TIPO_EXPERIENCIA => 'Nueva experiencia',
+    Items::TIPO_ITEM        => 'Nuevo ítem',
+];
+$this->title = $titulos[$tipo] ?? 'Nuevo ítem';
 $this->params['breadcrumbs'][] = ['label' => 'Ítems / Proveedores', 'url' => ['index', 'ItemsSearch[tipo]' => $tipo ?: Items::TIPO_ITEM]];
 $this->params['breadcrumbs'][] = $this->title;
 ?>

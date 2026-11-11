@@ -42,6 +42,7 @@ class ReservaCotizacionDetalle extends ActiveRecord
     public const SECCION_PAQUETE = 'paquete';
     public const SECCION_ITEM = 'item';
     public const SECCION_PROVEEDOR = 'proveedor';
+    public const SECCION_EXPERIENCIA = 'experiencia';
 
     /** Topes para que las cuentas en centavos no desborden */
     public const CANTIDAD_MAX = 99999.99;
@@ -55,9 +56,10 @@ class ReservaCotizacionDetalle extends ActiveRecord
     public static function secciones(): array
     {
         return [
-            self::SECCION_PAQUETE   => 'Paquete',
-            self::SECCION_ITEM      => 'Ítem',
-            self::SECCION_PROVEEDOR => 'Proveedor',
+            self::SECCION_PAQUETE     => 'Paquete',
+            self::SECCION_ITEM        => 'Ítem',
+            self::SECCION_PROVEEDOR   => 'Proveedor',
+            self::SECCION_EXPERIENCIA => 'Experiencia',
         ];
     }
 
@@ -225,7 +227,11 @@ class ReservaCotizacionDetalle extends ActiveRecord
     public static function desdeItem(Items $item): self
     {
         $linea = new self();
-        $linea->seccion = $item->tipo === Items::TIPO_PROVEEDOR ? self::SECCION_PROVEEDOR : self::SECCION_ITEM;
+        $mapaSeccion = [
+            Items::TIPO_PROVEEDOR   => self::SECCION_PROVEEDOR,
+            Items::TIPO_EXPERIENCIA => self::SECCION_EXPERIENCIA,
+        ];
+        $linea->seccion = $mapaSeccion[$item->tipo] ?? self::SECCION_ITEM;
         $linea->idorigen = $item->iditem;
         $linea->nombre = $item->nombre;
         $linea->empresa = $item->empresa;
@@ -243,6 +249,89 @@ class ReservaCotizacionDetalle extends ActiveRecord
     public function getSeccionTexto(): string
     {
         return self::secciones()[$this->seccion] ?? (string)$this->seccion;
+    }
+
+    // ---------------------------------------------------------------- presupuesto: orden y colores
+
+    /** Orden de aparición en el presupuesto: Paquete, Proveedor, Experiencia, Ítem. */
+    public const ORDEN_SECCION = [
+        self::SECCION_PAQUETE     => 0,
+        self::SECCION_PROVEEDOR   => 1,
+        self::SECCION_EXPERIENCIA => 2,
+        self::SECCION_ITEM        => 3,
+    ];
+
+    /** Color del texto de cada tipo en el presupuesto (vista y PDF). */
+    public const COLORES_SECCION = [
+        self::SECCION_PAQUETE     => '#527f1a', // verde de la página
+        self::SECCION_PROVEEDOR   => '#222222', // negro
+        self::SECCION_EXPERIENCIA => '#c0392b', // rojo suave
+        self::SECCION_ITEM        => '#2574a9', // azul
+    ];
+
+    public static function colorSeccion(?string $seccion): string
+    {
+        return self::COLORES_SECCION[$seccion] ?? '#222222';
+    }
+
+    /** Nombre en plural para la referencia de colores. */
+    public static function nombresGrupos(): array
+    {
+        return [
+            self::SECCION_PAQUETE     => 'Paquetes',
+            self::SECCION_PROVEEDOR   => 'Proveedores',
+            self::SECCION_EXPERIENCIA => 'Experiencias',
+            self::SECCION_ITEM        => 'Ítems',
+        ];
+    }
+
+    public function esPrecioCero(): bool
+    {
+        return self::aCentavos($this->precio_unitario) === 0;
+    }
+
+    /**
+     * Separa las líneas del presupuesto en dos bloques: precio 0 y precio > 0.
+     * Cada bloque queda ordenado por tipo (Paquete, Proveedor, Experiencia, Ítem),
+     * respetando el orden original dentro del mismo tipo.
+     *
+     * @param self[] $lineas
+     * @return array{0: self[], 1: self[]}  [cero, conCosto]
+     */
+    public static function agruparPresupuesto(array $lineas): array
+    {
+        // Arriba (fondo verde claro): el paquete SIEMPRE, más todo lo de precio 0. Abajo: el resto.
+        $cero = [];
+        $conCosto = [];
+        foreach ($lineas as $l) {
+            if ($l->seccion === self::SECCION_PAQUETE || $l->esPrecioCero()) {
+                $cero[] = $l;
+            } else {
+                $conCosto[] = $l;
+            }
+        }
+        $cmp = static function (self $a, self $b): int {
+            return (self::ORDEN_SECCION[$a->seccion] ?? 99) <=> (self::ORDEN_SECCION[$b->seccion] ?? 99);
+        };
+        usort($cero, $cmp);
+        usort($conCosto, $cmp);
+        return [$cero, $conCosto];
+    }
+
+    /** Grupos (tipos) presentes en estas líneas, en el orden del presupuesto, para la referencia de colores. */
+    public static function gruposPresentes(array $lineas): array
+    {
+        $presentes = [];
+        foreach ($lineas as $l) {
+            $presentes[$l->seccion] = true;
+        }
+        $orden = [];
+        foreach (array_keys(self::ORDEN_SECCION) as $sec) {
+            if (isset($presentes[$sec])) {
+                $orden[] = $sec;
+            }
+        }
+        return $orden;
     }
 
     public function getUnidadTexto(): string

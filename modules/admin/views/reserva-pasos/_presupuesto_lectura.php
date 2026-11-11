@@ -35,6 +35,45 @@ $pct = function ($v) {
                 'title' => 'Ver o subir imágenes del presupuesto (se abre en otra pestaña)']) ?>
     </h3>
 
+    <?php
+    [$lineasCero, $lineasCosto] = ReservaCotizacionDetalle::agruparPresupuesto($lineas);
+    $grupos = ReservaCotizacionDetalle::gruposPresentes($lineas);
+    $nombresGrupos = ReservaCotizacionDetalle::nombresGrupos();
+
+    $fila = function ($l, $bg) use ($cant, $pct) {
+        $color = ReservaCotizacionDetalle::colorSeccion($l->seccion);
+        $tr = $bg ? ' style="background-color:#f7f9f1;"' : '';
+        ob_start(); ?>
+            <tr<?= $tr ?>>
+                <td>
+                    <b style="color:<?= $color ?>;"><?= Html::encode($l->nombre) ?></b>
+                    <?php if ($l->empresa): ?><small class="text-muted">· <?= Html::encode($l->empresa) ?></small><?php endif; ?>
+                </td>
+                <td class="text-right"><?= $cant($l->cantidad) ?> <small class="text-muted"><?= Html::encode(mb_strtolower($l->getUnidadTexto())) ?></small></td>
+                <td class="text-right"><?= FormatoHelper::formatoBs($l->precio_unitario) ?></td>
+                <td class="text-right"><?= FormatoHelper::formatoBs($l->subtotal) ?></td>
+                <td class="text-right">
+                    <?php if (ReservaCotizacionDetalle::aCentavos($l->descuento_monto) > 0): ?>
+                        − <?= FormatoHelper::formatoBs($l->descuento_monto) ?> <small class="text-muted">(<?= $pct($l->descuento_porcentaje) ?>%)</small>
+                    <?php else: ?>
+                        <span class="text-muted">—</span>
+                    <?php endif; ?>
+                </td>
+                <td class="text-right"><b><?= FormatoHelper::formatoBs($l->total) ?></b></td>
+            </tr>
+        <?php return ob_get_clean();
+    };
+    ?>
+
+    <?php if ($grupos): ?>
+        <p style="margin:0 0 8px; font-size:13px;">
+            <?php foreach ($grupos as $sec): ?>
+                <span style="color:<?= ReservaCotizacionDetalle::colorSeccion($sec) ?>;">■</span>
+                <span class="text-muted" style="margin-right:16px;"><?= Html::encode($nombresGrupos[$sec] ?? '') ?></span>
+            <?php endforeach; ?>
+        </p>
+    <?php endif; ?>
+
     <div class="table-responsive">
         <table class="table table-bordered table-condensed tabla-lineas tabla-lectura">
             <thead>
@@ -48,26 +87,14 @@ $pct = function ($v) {
             </tr>
             </thead>
             <tbody>
-            <?php foreach ($lineas as $l): ?>
-                <?php $esPaquete = $l->seccion === ReservaCotizacionDetalle::SECCION_PAQUETE; ?>
-                <tr class="<?= $esPaquete ? 'fila-paquete-lectura' : '' ?>">
-                    <td>
-                        <span class="label label-<?= $esPaquete ? 'success' : ($l->seccion === 'proveedor' ? 'warning' : 'info') ?>"><?= Html::encode($l->getSeccionTexto()) ?></span>
-                        <b><?= Html::encode($l->nombre) ?></b>
-                        <?php if ($l->empresa): ?><small class="text-muted">· <?= Html::encode($l->empresa) ?></small><?php endif; ?>
-                    </td>
-                    <td class="text-right"><?= $cant($l->cantidad) ?> <small class="text-muted"><?= Html::encode(mb_strtolower($l->getUnidadTexto())) ?></small></td>
-                    <td class="text-right"><?= FormatoHelper::formatoBs($l->precio_unitario) ?></td>
-                    <td class="text-right"><?= FormatoHelper::formatoBs($l->subtotal) ?></td>
-                    <td class="text-right">
-                        <?php if (ReservaCotizacionDetalle::aCentavos($l->descuento_monto) > 0): ?>
-                            − <?= FormatoHelper::formatoBs($l->descuento_monto) ?> <small class="text-muted">(<?= $pct($l->descuento_porcentaje) ?>%)</small>
-                        <?php else: ?>
-                            <span class="text-muted">—</span>
-                        <?php endif; ?>
-                    </td>
-                    <td class="text-right"><b><?= FormatoHelper::formatoBs($l->total) ?></b></td>
-                </tr>
+            <?php foreach ($lineasCero as $l): ?>
+                <?= $fila($l, true) ?>
+            <?php endforeach; ?>
+            <?php if ($lineasCero && $lineasCosto): ?>
+                <tr><td colspan="6" style="border-top:2px solid #6ba622; padding:0; height:10px; background:#fff;"></td></tr>
+            <?php endif; ?>
+            <?php foreach ($lineasCosto as $l): ?>
+                <?= $fila($l, false) ?>
             <?php endforeach; ?>
             </tbody>
         </table>

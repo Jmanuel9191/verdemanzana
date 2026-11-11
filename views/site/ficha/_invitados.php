@@ -22,9 +22,12 @@ $distribucion = DistribucionInvitados::buscar($id);
 <section class="vm-bloque">
     <h2 class="vm-bloque-titulo">
         Lista de invitados
-        <?= Html::a('<i class="fa-solid fa-file-pdf"></i> Descargar PDF',
-            ['site/invitados-pdf', 'id' => $id],
+        <?= Html::a('<i class="fa-solid fa-file-pdf"></i> Descargar PDF (# mesa)',
+            ['site/invitados-pdf', 'id' => $id, 'orden' => 'mesa'],
             ['class' => 'btn vm-btn-pdf pull-right', 'target' => '_blank', 'rel' => 'noopener']) ?>
+        <?= Html::a('<i class="fa-solid fa-file-pdf"></i> Descargar PDF (Apellido)',
+            ['site/invitados-pdf', 'id' => $id, 'orden' => 'apellido'],
+            ['class' => 'btn vm-btn-pdf pull-right', 'target' => '_blank', 'rel' => 'noopener', 'style' => 'margin-right:6px']) ?>
     </h2>
 
     <?php if ($hayArchivoViejo): ?>

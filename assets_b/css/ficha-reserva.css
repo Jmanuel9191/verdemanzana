@@ -124,6 +124,13 @@
 .vm-etq-proveedor { background: #fcf0d9; color: #8a6d3b; }
 .vm-etiqueta-gris { background: #eee; color: #777; }
 
+/* --- Referencia de colores del presupuesto --- */
+.vm-ref-colores { margin: 0 0 10px; font-size: 13px; line-height: 1.8; }
+.vm-ref-colores > span { margin-right: 2px; }
+.vm-ref-colores .vm-gris { margin-right: 16px; }
+/* Separador entre los de precio 0 (arriba) y los de precio > 0 (abajo) */
+.vm-tabla .vm-sep-costo > td { border-top: 2px solid #6ba622; padding: 0; height: 10px; }
+
 /* --- Tabla del presupuesto --- */
 .vm-tabla { font-size: 14px; }
 .vm-tabla > thead > tr > th { border-bottom: 2px solid #6ba622; color: #527f1a; }

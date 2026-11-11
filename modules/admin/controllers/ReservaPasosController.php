@@ -258,6 +258,28 @@ class ReservaPasosController extends Controller
     }
 
     /**
+     * Paso 5: Guía. Sube/reemplaza UN archivo (PDF, Word, Excel o imagen, máx. 15 MB).
+     * En "crear" el paso aparece pero deshabilitado hasta que exista el presupuesto.
+     */
+    public function actionGuia($id)
+    {
+        [$reserva, $cotizacion] = $this->buscar($id);
+
+        if (Yii::$app->request->isPost) {
+            $file = UploadedFile::getInstanceByName('guia');
+            [$ok, $msg] = \app\components\GuiaReserva::guardar($reserva, $file);
+            Yii::$app->session->setFlash($ok ? 'success' : 'error', $ok ? 'Archivo de guía subido.' : $msg);
+            return $this->refresh();
+        }
+
+        return $this->render('guia', [
+            'reserva'    => $reserva,
+            'cotizacion' => $cotizacion,
+            'guia'       => \app\components\GuiaReserva::buscar((int)$reserva->idreservas),
+        ]);
+    }
+
+    /**
      * Ficha general de la reserva (solo lectura) con accesos a cada parte para editarla.
      */
     public function actionVer($id)

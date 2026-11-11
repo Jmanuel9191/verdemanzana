@@ -303,13 +303,13 @@
 }
 
 /* ---------- RESERVA POR PASOS · create / presupuesto / modificar-presupuesto / pagos / detalles / cronograma ---------- */
-:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .pasos-reserva {
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-guia) .pasos-reserva {
     margin-bottom:0;
 }
-:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .pasos-reserva > li > a {
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-guia) .pasos-reserva > li > a {
     font-weight:600;
 }
-:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .pasos-reserva .paso-numero {
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-guia) .pasos-reserva .paso-numero {
     display:inline-block;
     width:22px;
     height:22px;
@@ -321,10 +321,10 @@
     font-size:12px;
     margin-right:4px;
 }
-:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .pasos-reserva > li.disabled .paso-numero {
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-guia) .pasos-reserva > li.disabled .paso-numero {
     background:#bbb;
 }
-:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma) .caja-paso {
+:where(.pagina-reserva-pasos-create, .pagina-reserva-pasos-presupuesto, .pagina-reserva-pasos-modificar-presupuesto, .pagina-reserva-pasos-pagos, .pagina-reserva-pasos-detalles, .pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-guia) .caja-paso {
     border-top-left-radius:0;
 }
 
@@ -550,17 +550,17 @@
 }
 
 /* ---------- RESERVA POR PASOS · cronograma ---------- */
-:where(.pagina-reserva-pasos-cronograma) .ayuda-cronograma {
+:where(.pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-guia) .ayuda-cronograma {
     background:#fafcf7;
     border:1px dashed #c5d9a8;
     padding:10px 15px;
     border-radius:3px;
     margin-bottom:15px;
 }
-:where(.pagina-reserva-pasos-cronograma) .ayuda-cronograma kbd {
+:where(.pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-guia) .ayuda-cronograma kbd {
     background:#527f1a;
 }
-:where(.pagina-reserva-pasos-cronograma) .cronograma-vista .titulo-cronograma {
+:where(.pagina-reserva-pasos-cronograma, .pagina-reserva-pasos-guia) .cronograma-vista .titulo-cronograma {
     color:#527f1a;
     font-size:22px;
     font-weight:600;

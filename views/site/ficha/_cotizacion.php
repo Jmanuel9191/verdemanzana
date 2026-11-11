@@ -119,6 +119,44 @@ $descargas = array_filter([
 
             <?php if ($cotizacion): ?>
                 <?php $pagado = $cotizacion->getTotalPagado(); ?>
+                <?php
+                [$lineasCero, $lineasCosto] = ReservaCotizacionDetalle::agruparPresupuesto($cotizacion->detalles);
+                $grupos = ReservaCotizacionDetalle::gruposPresentes($cotizacion->detalles);
+                $nombresGrupos = ReservaCotizacionDetalle::nombresGrupos();
+
+                $fila = function ($l, $bg) use ($cant, $pct) {
+                    $color = ReservaCotizacionDetalle::colorSeccion($l->seccion);
+                    $tr = $bg ? ' style="background-color:#f7f9f1;"' : '';
+                    ob_start(); ?>
+                        <tr<?= $tr ?>>
+                            <td>
+                                <strong style="color:<?= $color ?>;"><?= Html::encode($l->nombre) ?></strong>
+                                <?php if ($l->empresa): ?><small class="vm-gris">· <?= Html::encode($l->empresa) ?></small><?php endif; ?>
+                            </td>
+                            <td class="text-right vm-nowrap"><?= $cant($l->cantidad) ?> <small class="vm-gris"><?= Html::encode(mb_strtolower($l->getUnidadTexto())) ?></small></td>
+                            <td class="text-right vm-nowrap hidden-xs"><?= FormatoHelper::formatoBs($l->precio_unitario) ?></td>
+                            <td class="text-right vm-nowrap hidden-xs">
+                                <?php if (ReservaCotizacionDetalle::aCentavos($l->descuento_monto) > 0): ?>
+                                    − <?= FormatoHelper::formatoBs($l->descuento_monto) ?> <small class="vm-gris">(<?= $pct($l->descuento_porcentaje) ?>%)</small>
+                                <?php else: ?>
+                                    <span class="vm-guion">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-right vm-nowrap"><strong><?= FormatoHelper::formatoBs($l->total) ?></strong></td>
+                        </tr>
+                    <?php return ob_get_clean();
+                };
+                ?>
+
+                <?php if ($grupos): ?>
+                    <p class="vm-ref-colores">
+                        <?php foreach ($grupos as $sec): ?>
+                            <span style="color:<?= ReservaCotizacionDetalle::colorSeccion($sec) ?>;">■</span>
+                            <span class="vm-gris"><?= Html::encode($nombresGrupos[$sec] ?? '') ?></span>
+                        <?php endforeach; ?>
+                    </p>
+                <?php endif; ?>
+
                 <div class="table-responsive">
                     <table class="table vm-tabla">
                         <thead>
@@ -131,27 +169,14 @@ $descargas = array_filter([
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($cotizacion->detalles as $l):
-                            $sec = $l->seccion;
-                            $clase = $sec === ReservaCotizacionDetalle::SECCION_PAQUETE ? 'vm-etq-paquete'
-                                : ($sec === ReservaCotizacionDetalle::SECCION_PROVEEDOR ? 'vm-etq-proveedor' : 'vm-etq-item'); ?>
-                            <tr>
-                                <td>
-                                    <span class="vm-etiqueta <?= $clase ?>"><?= Html::encode($l->getSeccionTexto()) ?></span>
-                                    <strong><?= Html::encode($l->nombre) ?></strong>
-                                    <?php if ($l->empresa): ?><small class="vm-gris">· <?= Html::encode($l->empresa) ?></small><?php endif; ?>
-                                </td>
-                                <td class="text-right vm-nowrap"><?= $cant($l->cantidad) ?> <small class="vm-gris"><?= Html::encode(mb_strtolower($l->getUnidadTexto())) ?></small></td>
-                                <td class="text-right vm-nowrap hidden-xs"><?= FormatoHelper::formatoBs($l->precio_unitario) ?></td>
-                                <td class="text-right vm-nowrap hidden-xs">
-                                    <?php if (ReservaCotizacionDetalle::aCentavos($l->descuento_monto) > 0): ?>
-                                        − <?= FormatoHelper::formatoBs($l->descuento_monto) ?> <small class="vm-gris">(<?= $pct($l->descuento_porcentaje) ?>%)</small>
-                                    <?php else: ?>
-                                        <span class="vm-guion">—</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-right vm-nowrap"><strong><?= FormatoHelper::formatoBs($l->total) ?></strong></td>
-                            </tr>
+                        <?php foreach ($lineasCero as $l): ?>
+                            <?= $fila($l, true) ?>
+                        <?php endforeach; ?>
+                        <?php if ($lineasCero && $lineasCosto): ?>
+                            <tr class="vm-sep-costo"><td colspan="5"></td></tr>
+                        <?php endif; ?>
+                        <?php foreach ($lineasCosto as $l): ?>
+                            <?= $fila($l, false) ?>
                         <?php endforeach; ?>
                         </tbody>
                     </table>

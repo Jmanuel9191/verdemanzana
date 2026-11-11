@@ -11,9 +11,10 @@ $pasos = [
     'pagos'       => ['2', 'Pagos', 'fa-money', 'pagos'],
     'detalles'    => ['3', 'Detalles', 'fa-list-alt', 'detalles'],
     'cronograma'  => ['4', 'Cronograma', 'fa-clock-o', 'cronograma'],
+    'guia'        => ['5', 'Guía', 'fa-book', 'guia'],
 ];
 // Pasos que todavía no están programados (se habilitan cuando existan las acciones)
-$disponibles = ['presupuesto', 'pagos', 'detalles', 'cronograma'];
+$disponibles = ['presupuesto', 'pagos', 'detalles', 'cronograma', 'guia'];
 ?>
 <ul class="nav nav-tabs pasos-reserva">
     <?php foreach ($pasos as $clave => [$numero, $texto, $icono, $accion]): ?>

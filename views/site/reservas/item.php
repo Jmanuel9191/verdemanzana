@@ -49,12 +49,14 @@ $datos = [
 
 $pestanas = [
     'cotizacion'  => ['Cotización', '@app/views/site/ficha/_cotizacion'],
-    'facturacion' => ['Facturación', '@app/views/site/ficha/_facturacion'],
+    'facturacion' => ['Estado de cuenta', '@app/views/site/ficha/_facturacion'],
     'cronograma'  => ['Cronograma', '@app/views/site/ficha/_cronograma'],
 ];
 if ($tieneGuia) {
     $pestanas['guia'] = ['Guía del evento', '@app/views/site/reservas/guiadecoracion'];
 }
+// Guía (archivo que sube el administrador: PDF, Word, Excel o imagen)
+$pestanas['guiaarchivo'] = ['Guía', '@app/views/site/ficha/_guia'];
 $pestanas['invitados'] = ['Lista de invitados', '@app/views/site/ficha/_invitados'];
 ?>
 

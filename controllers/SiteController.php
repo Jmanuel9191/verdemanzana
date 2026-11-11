@@ -1088,15 +1088,38 @@ class SiteController extends Controller
         return $this->redirect(['reserva', 'id' => (int)$id, '#' => 'invitados']);
     }
 
+    /**
+     * Sube/reemplaza el archivo de Guía (PDF, Word, Excel o imagen, máx. 15 MB).
+     * Solo la organizadora (el cliente no sube; lo descarga desde la web).
+     */
+    public function actionSubirGuia($id)
+    {
+        $esOrganizadora = !Yii::$app->user->isGuest && !empty(Yii::$app->session->get('user'));
+        if (!$esOrganizadora) {
+            throw new \yii\web\ForbiddenHttpException('Solo la organizadora puede subir la guía.');
+        }
+        $reserva = Reservas::findOne((int)$id);
+        if ($reserva === null) {
+            throw new \yii\web\NotFoundHttpException('La reserva no existe.');
+        }
+        if (Yii::$app->request->isPost) {
+            $file = \yii\web\UploadedFile::getInstanceByName('guia');
+            [$ok, $msg] = \app\components\GuiaReserva::guardar($reserva, $file);
+            Yii::$app->session->setFlash($ok ? 'invitadoCreado' : 'error', $ok ? true : $msg);
+        }
+        return $this->redirect(['reserva', 'id' => (int)$id, '#' => 'guiaarchivo']);
+    }
+
     /** PDF de la lista de invitados (organizadora o cliente dueño). */
-    public function actionInvitadosPdf($id)
+    public function actionInvitadosPdf($id, $orden = 'mesa')
     {
         $this->verificarAccesoReserva($id);
         $reserva = Reservas::findOne((int)$id);
         if ($reserva === null) {
             throw new \yii\web\NotFoundHttpException('La reserva no existe.');
         }
-        [$contenido, $nombre] = \app\components\PdfReserva::generarInvitados($reserva);
+        $orden = $orden === 'apellido' ? 'apellido' : 'mesa';
+        [$contenido, $nombre] = \app\components\PdfReserva::generarInvitados($reserva, $orden);
         return Yii::$app->response->sendContentAsFile($contenido, $nombre, [
             'mimeType' => 'application/pdf',
             'inline'   => true,

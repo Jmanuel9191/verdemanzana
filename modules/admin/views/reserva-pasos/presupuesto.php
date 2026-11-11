@@ -150,7 +150,7 @@ $pagosNuevos = $esConversion ? \app\models\ReservaPago::totalPagado((int)$reserv
             <!-- ===================== REFERENCIA: PRESUPUESTO ANTERIOR ===================== -->
             <div class="box-body">
                 <div class="referencia-anterior">
-                    <h4> Presupuesto anterior (referencia)</h4>
+                    <h4><i class="fa fa-history"></i> Presupuesto anterior (referencia)</h4>
                     <div class="row">
                         <div class="col-sm-3"><small>Paquete</small><b><?= Html::encode(trim((string)$reserva->paquete_reservar) ?: '—') ?></b></div>
                         <div class="col-sm-3"><small>Presupuesto del paquete</small><b><?= \app\helpers\FormatoHelper::formatoBs($cuentaAnterior->total_paquete) ?></b></div>
@@ -172,9 +172,9 @@ $pagosNuevos = $esConversion ? \app\models\ReservaPago::totalPagado((int)$reserv
                         <?php endif; ?>
                     </div>
                     <p class="text-muted" style="margin:8px 0 0">
-                        Elegír el paquete del catálogo (obligatorio) y agregár lo que haga falta. La cantidad comienza con los invitados
-                        que ya tenía la reserva. Abajo se vera la <b>diferencia con el presupuesto anterior</b>.
-                        Si lo cancelado antes no es correcto, corregir acá. Al guardar, la reserva pasa al sistema nuevo.
+                        Elegí el paquete del catálogo (obligatorio) y agregá lo que haga falta. La cantidad arranca con los invitados
+                        que ya tenía la reserva. Abajo vas a ver la <b>diferencia con el presupuesto anterior</b>.
+                        Si lo cancelado antes no es correcto, corregilo acá. Al guardar, la reserva pasa al sistema nuevo.
                     </p>
                 </div>
             </div>
@@ -182,7 +182,7 @@ $pagosNuevos = $esConversion ? \app\models\ReservaPago::totalPagado((int)$reserv
             <div class="box-body">
                 <div class="alert alert-warning aviso-modificar">
                     <i class="fa fa-info-circle"></i>
-                    Se va a modificar el presupuesto de una reserva ya creada. Al guardar, el cambio queda registrado en el historial
+                    Estás modificando el presupuesto de una reserva ya creada. Al guardar, el cambio queda registrado en el historial
                     (qué se agregó, quitó o cambió, el total anterior y el nuevo, quién y cuándo).
                 </div>
             </div>
@@ -234,7 +234,7 @@ $pagosNuevos = $esConversion ? \app\models\ReservaPago::totalPagado((int)$reserv
                     <?= $af->field($reserva, 'nombre')->textInput(['maxlength' => true])->label('Nombre(s) del cliente') ?>
                     <?= $af->field($reserva, 'telefono')->textInput(['maxlength' => 20, 'inputmode' => 'numeric', 'placeholder' => 'Solo números, ej. 70012345'])->label('Teléfono') ?>
                     <?= $af->field($reserva, 'email')->textInput(['maxlength' => 250, 'autocomplete' => 'off', 'placeholder' => 'Ej. ana.luis@gmail.com o analuis2027'])
-                        ->label('Email o usuario para iniciar sesión')->hint('Es el usuario del cliente: puede ser un email o un usuario normal. Sin espacios. (No se puede repetir).') ?>
+                        ->label('Email o usuario para iniciar sesión')->hint('Es el usuario del cliente: puede ser un email o un nombre sin @. Sin espacios. No se puede repetir.') ?>
 
                     <?php if ($esNueva): ?>
                         <?= $this->render('_campo_contrasena', [
@@ -333,7 +333,7 @@ $pagosNuevos = $esConversion ? \app\models\ReservaPago::totalPagado((int)$reserv
         <!-- ===================== PROVEEDORES / ÍTEMS ===================== -->
         <div class="box-body">
             <h3 class="titulo-seccion">
-                 Proveedores / Ítems
+                 Proveedores / Ítems / Experiencias
                 <button type="button" class="btn btn-success btn-sm pull-right" id="btn-agregar-linea">
                     <i class="fa fa-plus"></i> Agregar
                 </button>
